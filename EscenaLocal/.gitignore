@@ -32,33 +32,55 @@ build/
 ### VS Code ###
 .vscode/
 
+<<<<<<< HEAD
 # Compilados de Angular
+=======
+Compilados de Angular
+>>>>>>> de619c88fd6f951632c7b24d322cb5e28f989a68
 /dist
 /out-tsc
 /tmp
 
+<<<<<<< HEAD
 # Dependencias
 /node_modules
 
 # Archivos de build de Angular
 /*.log
 npm-debug.log*
+=======
+Dependencias
+/node_modules
+
+Archivos de build de Angular
+/.log
+npm-debug.log
+>>>>>>> de619c88fd6f951632c7b24d322cb5e28f989a68
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+<<<<<<< HEAD
 # Archivos de lock opcionales
+=======
+Archivos de lock opcionales
+>>>>>>> de619c88fd6f951632c7b24d322cb5e28f989a68
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
+<<<<<<< HEAD
 # VSCode
+=======
+VSCode
+>>>>>>> de619c88fd6f951632c7b24d322cb5e28f989a68
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
+<<<<<<< HEAD
 # Sistema operativo
 .DS_Store
 Thumbs.db
@@ -75,3 +97,21 @@ Thumbs.db
 
 # Archivos de cache
 .angular/cache
+=======
+Sistema operativo
+.DS_Store
+Thumbs.db
+
+Cobertura de tests
+/coverage
+
+Archivos de entorno (no subir claves sensibles)
+*.env
+*.local
+
+Archivos generados por Angular Universal
+/server
+
+Archivos de cache
+.angular/cache
+>>>>>>> de619c88fd6f951632c7b24d322cb5e28f989a68
