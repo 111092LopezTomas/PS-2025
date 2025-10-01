@@ -3,18 +3,25 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Event {
-  id: number;
-  name: string;
-  date: string;
-  price: number;
-  location: string;
+  id: Number;
+  activo: Boolean;
+  descripcion: String;
+  evento: String;
+  fecha: Date;
+  hora: Date;
+  artistas: String[];
+  entradas: String[];
+  clasificacion: String;
+  establecimiento: String;
+  ciudad: String;
+  provincia: String;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class EventService {
-  private apiUrl = '/api/events'; // gracias al proxy
+  private apiUrl = 'http://localhost:8080/eventos/all';
 
   constructor(private http: HttpClient) {}
 
