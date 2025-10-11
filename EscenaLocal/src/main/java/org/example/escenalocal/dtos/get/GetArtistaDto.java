@@ -20,10 +20,6 @@ public class GetArtistaDto {
 
     private String red_social;
 
-    private String email;
-
-    private String contrasenia;
-
     private String genero;
 
     public GetArtistaDto(Long id, String nombre) {

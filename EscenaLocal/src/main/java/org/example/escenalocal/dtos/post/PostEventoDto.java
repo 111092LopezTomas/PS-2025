@@ -1,5 +1,7 @@
 package org.example.escenalocal.dtos.post;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -22,21 +24,23 @@ public class PostEventoDto {
     @Size(min = 1, max = 500, message = "La descripción debe tener entre 1 y 500 caracteres")
     private String descripcion;
 
-    private LocalDate fecha;
+    private String fecha;
 
-    private LocalTime hora;
+    private String hora;
 
     @NotNull(message = "El estado no puede ser nulo")
     private Boolean activo;
 
-    private Set<Long> entradas;
+    private Set<Long> tipoEntradaId;
 
     @NotNull(message = "El establecimiento no puede ser nulo")
-    private Long establecimiento;
+    private Long establecimientoId;
 
     @NotNull(message = "La clasificacion no puede ser nula")
-    private Long clasificacion;
+    private Long clasificacionId;
 
-    private Set<Long> artistas;
+    private Set<Long> artistaId;
+
+    private Long productorId;
 
 }

@@ -34,20 +34,6 @@ public class ArtistaEntity {
     @Column
     private String red_social;
 
-    @Column
-    private String email;
-
-    @Column
-    private String contrasenia;
-
-
-//    @ManyToMany
-//    @JoinTable(
-//            name = "artista_evento",
-//            joinColumns = @JoinColumn(name = "idArtista"),
-//            inverseJoinColumns = @JoinColumn(name = "idEvento")
-//    )
-//    @ManyToMany(mappedBy = "artistas")
     @OneToMany(mappedBy = "artista")
     private Set<ArtistaEventoEntity> artistaEventos = new HashSet<>();
 

@@ -1,0 +1,247 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">Crear Nuevo Evento</h3>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+            
+            <!-- Nombre del Evento -->
+            <div class="mb-3">
+              <label for="nombreEvento" class="form-label">Nombre del Evento</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="nombreEvento"
+                formControlName="nombreEvento"
+                [class.is-invalid]="submitted && f['nombreEvento'].errors"
+                placeholder="Ingrese el nombre del evento">
+              <div class="invalid-feedback" *ngIf="submitted && f['nombreEvento'].errors">
+                <div *ngIf="f['nombreEvento'].errors['required']">El nombre del evento es requerido</div>
+                <div *ngIf="f['nombreEvento'].errors['minlength']">El nombre debe tener al menos 3 caracteres</div>
+              </div>
+            </div>
+
+            <!-- Descripción -->
+            <div class="mb-3">
+              <label for="descripcion" class="form-label">Descripción</label>
+              <textarea 
+                class="form-control" 
+                id="descripcion"
+                formControlName="descripcion"
+                rows="4"
+                [class.is-invalid]="submitted && f['descripcion'].errors"
+                placeholder="Ingrese una descripción del evento"></textarea>
+              <div class="invalid-feedback" *ngIf="submitted && f['descripcion'].errors">
+                <div *ngIf="f['descripcion'].errors['required']">La descripción es requerida</div>
+                <div *ngIf="f['descripcion'].errors['minlength']">La descripción debe tener al menos 10 caracteres</div>
+              </div>
+              <small class="text-muted">
+                {{ eventForm.get('descripcion')?.value?.length || 0 }} caracteres
+              </small>
+            </div>
+
+            <!-- Artista -->
+            <div class="mb-3">
+              <label for="artistaId" class="form-label">Artista</label>
+              <select 
+                class="form-select" 
+                id="artistaId"
+                formControlName="artistaId"
+                [class.is-invalid]="submitted && f['artistaId'].errors">
+                <option value="">Seleccione un artista</option>
+                <option *ngFor="let artista of artistas" [value]="artista.id">
+                  {{ artista.nombre }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="submitted && f['artistaId'].errors">
+                Debe seleccionar un artista
+              </div>
+              <div class="text-center mt-2" *ngIf="isLoading && artistas.length === 0">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Productor -->
+            <div class="mb-3">
+              <label for="productorId" class="form-label">Productor</label>
+              <select 
+                class="form-select" 
+                id="productorId"
+                formControlName="productorId"
+                [class.is-invalid]="submitted && f['productorId'].errors">
+                <option value="">Seleccione un productor</option>
+                <option *ngFor="let productor of productores" [value]="productor.id">
+                  {{ productor.nombre }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="submitted && f['productorId'].errors">
+                Debe seleccionar un productor
+              </div>
+            </div>
+
+            <!-- Tipo de Entrada -->
+            <div class="mb-3">
+              <label for="tipoEntradaId" class="form-label">Tipo de Entrada</label>
+              <select 
+                class="form-select" 
+                id="tipoEntradaId"
+                formControlName="tipoEntradaId"
+                [class.is-invalid]="submitted && f['tipoEntradaId'].errors">
+                <option value="">Seleccione un tipo de entrada</option>
+                <option *ngFor="let tipo of tiposEntrada" [value]="tipo.id">
+                  {{ tipo.entrada }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="submitted && f['tipoEntradaId'].errors">
+                Debe seleccionar un tipo de entrada
+              </div>
+            </div>
+
+            <!-- Establecimiento -->
+            <div class="mb-3">
+              <label for="establecimientoId" class="form-label">Establecimiento</label>
+              <select 
+                class="form-select" 
+                id="establecimientoId"
+                formControlName="establecimientoId"
+                [class.is-invalid]="submitted && f['establecimientoId'].errors">
+                <option value="">Seleccione un establecimiento</option>
+                <option *ngFor="let establecimiento of establecimientos" [value]="establecimiento.id">
+                  {{ establecimiento.establecimiento }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="submitted && f['establecimientoId'].errors">
+                Debe seleccionar un establecimiento
+              </div>
+            </div>
+
+            <!-- Clasificación -->
+            <div class="mb-3">
+              <label for="clasificacionId" class="form-label">Clasificación</label>
+              <select 
+                class="form-select" 
+                id="clasificacionId"
+                formControlName="clasificacionId"
+                [class.is-invalid]="submitted && f['clasificacionId'].errors">
+                <option value="">Seleccione una clasificación</option>
+                <option *ngFor="let clasificacion of clasificaciones" [value]="clasificacion.id">
+                  {{ clasificacion.clasificacion }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="submitted && f['clasificacionId'].errors">
+                Debe seleccionar una clasificación
+              </div>
+            </div>
+
+            <!-- Fecha -->
+            <div class="mb-3">
+              <label for="fecha" class="form-label">Fecha del Evento</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="fecha"
+                formControlName="fecha"
+                [class.is-invalid]="submitted && f['fecha'].errors">
+              <div class="invalid-feedback" *ngIf="submitted && f['fecha'].errors">
+                La fecha es requerida
+              </div>
+            </div>
+
+            <!-- Hora -->
+            <div class="mb-3">
+              <label for="hora" class="form-label">Hora del Evento</label>
+              <input 
+                type="time" 
+                class="form-control" 
+                id="hora"
+                formControlName="hora"
+                [class.is-invalid]="submitted && f['hora'].errors">
+              <div class="invalid-feedback" *ngIf="submitted && f['hora'].errors">
+                La hora es requerida
+              </div>
+            </div>
+
+            <!-- Imagen -->
+            <div class="mb-3">
+              <label for="imagen" class="form-label">Imagen del Evento</label>
+              <input 
+                type="file" 
+                class="form-control" 
+                id="imagen"
+                accept="image/*"
+                (change)="onFileSelected($event)"
+                [class.is-invalid]="submitted && f['imagen'].errors">
+              <div class="invalid-feedback" *ngIf="submitted && f['imagen'].errors">
+                Debe seleccionar una imagen
+              </div>
+              
+              <!-- Preview de la imagen -->
+              <div class="mt-3" *ngIf="imagePreview">
+                <div class="position-relative d-inline-block">
+                  <img 
+                    [src]="imagePreview" 
+                    alt="Preview" 
+                    class="img-thumbnail"
+                    style="max-width: 300px; max-height: 300px;">
+                  <button 
+                    type="button" 
+                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
+                    (click)="removeImage()">
+                    <i class="bi bi-x-lg"></i> Eliminar
+                  </button>
+                </div>
+                <p class="text-muted small mt-2">
+                  <strong>Archivo:</strong> {{ selectedFile?.name }} 
+                  ({{ (selectedFile?.size || 0) / 1024 | number:'1.0-2' }} KB)
+                </p>
+              </div>
+            </div>
+
+            <!-- Estado Activo/Inactivo -->
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  role="switch"
+                  id="activo"
+                  formControlName="activo">
+                <label class="form-check-label" for="activo">
+                  <strong>Estado:</strong> 
+                  <span class="badge" [class.bg-success]="eventForm.get('activo')?.value" 
+                        [class.bg-secondary]="!eventForm.get('activo')?.value">
+                    {{ eventForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </label>
+              </div>
+              <small class="text-muted d-block mt-1">
+                Indica si el evento está activo y disponible para la venta
+              </small>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                (click)="resetForm()">
+                Limpiar
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary"
+                [disabled]="isLoading">
+                Crear Evento
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

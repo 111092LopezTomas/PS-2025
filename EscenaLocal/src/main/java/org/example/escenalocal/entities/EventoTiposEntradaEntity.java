@@ -27,6 +27,10 @@ public class EventoTiposEntradaEntity {
     @JoinColumn(name = "id_tipos_entrada")
     private TiposEntradaEntity tiposEntrada;
 
+    private Double precio;
+
+    private Integer disponibilidad;
+
     // equals/hashCode por id embebido
     @Override public boolean equals(Object o) {
         if (this == o) return true;

@@ -1,11 +1,10 @@
 package org.example.escenalocal.repositories;
 
-import org.example.escenalocal.dtos.get.EventoDetalleProj;
-import org.example.escenalocal.dtos.get.GetEventoDto;
+import jakarta.persistence.QueryHint;
 import org.example.escenalocal.entities.EventoEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -67,26 +66,47 @@ import java.util.Optional;
 //}
 public interface EventoRepository extends ListCrudRepository<EventoEntity, Long> {
 
-    @EntityGraph(attributePaths = {
-            "clasificacion",
-            "establecimiento",
-            "establecimiento.barrio",
-            "establecimiento.barrio.ciudad",
-            "establecimiento.barrio.ciudad.provincia",
-            "artistasEvento.artista",
-            "eventoTiposEntrada.tiposEntrada"
-    })
-    @Query("select e from EventoEntity e")
+//    @EntityGraph(attributePaths = {
+//            "clasificacion",
+//            "establecimiento",
+//            "productor",
+//            "imagenDatos",
+//            "establecimiento.barrio",
+//            "establecimiento.barrio.ciudad",
+//            "establecimiento.barrio.ciudad.provincia",
+//            "artistasEvento.artista",
+//            "eventoTiposEntrada.tiposEntrada",
+//            "eventoTiposEntrada.precio",
+//            "eventoTiposEntrada.disponibilidad"
+//    })
+//    @Query("select e from EventoEntity e")
+@EntityGraph(attributePaths = {
+  "clasificacion",
+  "establecimiento",
+  "productor",
+  "imagenDatos",
+  "establecimiento.barrio",
+  "establecimiento.barrio.ciudad",
+  "establecimiento.barrio.ciudad.provincia",
+  "artistasEvento.artista",
+  "eventoTiposEntrada.tiposEntrada"
+})
+@Query("select distinct e from EventoEntity e")
+@QueryHints(@QueryHint(name = "org.hibernate.jpa.HibernateHints.HINT_PASS_DISTINCT_THROUGH", value = "false"))
     List<EventoEntity> findAllForDto();
 
     @EntityGraph(attributePaths = {
             "clasificacion",
             "establecimiento",
+            "productor",
+            "imagenDatos",
             "establecimiento.barrio",
             "establecimiento.barrio.ciudad",
             "establecimiento.barrio.ciudad.provincia",
             "artistasEvento.artista",
-            "eventoTiposEntrada.tiposEntrada"
+            "eventoTiposEntrada.tiposEntrada",
+            "eventoTiposEntrada.precio",
+            "eventoTiposEntrada.disponibilidad"
     })
     @Query("select e from EventoEntity e where e.id = :id")
     Optional<EventoEntity> findByIdForDto(@Param("id") Long id);

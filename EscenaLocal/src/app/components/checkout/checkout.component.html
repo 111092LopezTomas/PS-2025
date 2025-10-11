@@ -1,0 +1,45 @@
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header d-flex align-items-center gap-2">
+          <span class="badge text-bg-dark">Demo</span>
+          <strong>Compra de entrada</strong>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">Evento: <strong>Show de ejemplo</strong></p>
+
+          <div *ngIf="error" class="alert alert-danger" role="alert">
+            {{ error }}
+          </div>
+
+          <button
+            class="btn btn-primary w-100"
+            (click)="comprar()"
+            [disabled]="loading"
+          >
+            <span *ngIf="!loading">Continuar con Mercado Pago</span>
+            <span
+              *ngIf="loading"
+              class="spinner-border spinner-border-sm me-2"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            <span *ngIf="loading"> Preparando…</span>
+          </button>
+
+          <div id="wallet_container" class="mt-3"></div>
+
+          <div *ngIf="initPoint" class="text-center mt-3">
+            <button
+              class="btn btn-outline-secondary"
+              (click)="redirigirCheckoutPro()"
+            >
+              O bien, ir al Checkout Pro
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,9 +1,11 @@
 package org.example.escenalocal.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.JdbcTypeCode;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,9 +18,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString(onlyExplicitlyIncluded = true)
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class EventoEntity {
 
     @Id
@@ -42,25 +42,11 @@ public class EventoEntity {
     @Column
     private Boolean activo;
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "evento_entrada",
-//            joinColumns = @JoinColumn(name = "idEvento"),
-//            inverseJoinColumns = @JoinColumn(name = "idTiposEntrada"))
-//    @ToString.Exclude
-//    @ManyToMany(mappedBy = "eventos", fetch = FetchType.LAZY)
-@OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EventoTiposEntradaEntity> eventoTiposEntrada = new HashSet<>();
 
-//    @ManyToMany
-//    @JoinTable(
-//            name = "artista_evento",
-//            joinColumns = @JoinColumn(name = "idArtista"),
-//            inverseJoinColumns = @JoinColumn(name = "idEvento")
-//    )
-//    @ToString.Exclude
+
     @OneToMany(mappedBy = "evento", cascade = CascadeType.ALL, orphanRemoval = true)
-//    @ManyToMany(mappedBy = "eventos", fetch = FetchType.LAZY)
     private Set<ArtistaEventoEntity> artistasEvento = new HashSet<>();
 
     @ManyToOne
@@ -70,6 +56,10 @@ public class EventoEntity {
     @ManyToOne
     @JoinColumn(name = "idClasificacion")
     private ClasificacionEntity clasificacion;
+
+    @ManyToOne
+    @JoinColumn(name = "idProductor")
+    private ProductorEntity productor;
 
     @Override
     public boolean equals(Object o) {
@@ -87,4 +77,18 @@ public class EventoEntity {
         return getClass().hashCode();
     }
 
+  @Lob
+  @Basic(fetch = FetchType.LAZY)
+  @Column(name = "img_datos", columnDefinition = "bytea", nullable = true)
+  @JdbcTypeCode(0)
+  private byte[] imagenDatos;
+
+  @Column(name = "img_tamano", nullable = true)
+  private Long imagenTamano;
+
+  @Column(name = "img_content_type", length = 255, nullable = true)
+  private String imagenContentType;
+
+  @Column(name = "img_nombre", length = 255, nullable = true)
+  private String imagenNombre;
 }

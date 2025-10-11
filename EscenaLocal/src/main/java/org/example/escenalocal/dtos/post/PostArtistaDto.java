@@ -23,13 +23,6 @@ public class PostArtistaDto {
     @Size(min = 1, max = 50, message = "La red social debe tener entre 1 y 50 caracteres")
     private String red_social;
 
-    @Email(message = "El correo electrónico debe ser válido")
-    private String email;
-
-    @NotNull(message = "La contraseña no puede ser nula")
-    @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")
-    private String contrasenia;
-
     @NotNull(message = "El genero no puede ser nulo")
 //    @Size(min = 1, max = 50, message = "El genero debe tener entre 1 y 50 caracteres")
     private Long genero;
