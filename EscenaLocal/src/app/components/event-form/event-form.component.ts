@@ -2,16 +2,16 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EventService } from '../../services/event.service';
 import { CommonModule } from '@angular/common';
-
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-event-form',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, FormsModule],
   templateUrl: './event-form.component.html',
   styleUrl: './event-form.component.css'
 })
 export class EventFormComponent {
- eventForm: FormGroup;
+  eventForm: FormGroup;
   artistas: any[] = [];
   productores: any[] = [];
   tiposEntrada: any[] = [];
@@ -22,6 +22,14 @@ export class EventFormComponent {
   selectedFile: File | null = null;
   imagePreview: string | null = null;
 
+  // ========== PROPIEDADES PARA MÚLTIPLES ARTISTAS Y ENTRADAS ==========
+  artistasSeleccionados: number[] = [];
+  artistaSeleccionado: string = '';
+  tiposEntradaSeleccionados: any[] = []; // Array de objetos {tipoEntradaId, nombre, precio, disponibilidad}
+  tipoEntradaSeleccionado: string = '';
+  precioEntrada: number | null = null;
+  disponibilidadEntrada: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private eventService: EventService
@@ -29,9 +37,7 @@ export class EventFormComponent {
     this.eventForm = this.fb.group({
       nombreEvento: ['', [Validators.required, Validators.minLength(3)]],
       descripcion: ['', [Validators.required, Validators.minLength(10)]],
-      artistaId: ['', Validators.required],
       productorId: ['', Validators.required],
-      tipoEntradaId: ['', Validators.required],
       establecimientoId: ['', Validators.required],
       clasificacionId: ['', Validators.required],
       fecha: ['', Validators.required],
@@ -108,6 +114,83 @@ export class EventFormComponent {
     });
   }
 
+  // ========== MÉTODOS PARA ARTISTAS MÚLTIPLES ==========
+  
+  agregarArtista(): void {
+    if (!this.artistaSeleccionado) return;
+    const artistaId = Number(this.artistaSeleccionado);
+    if (!this.artistasSeleccionados.includes(artistaId)) {
+      this.artistasSeleccionados.push(artistaId);
+      this.artistaSeleccionado = '';
+    }
+  }
+
+  eliminarArtista(index: number): void {
+    this.artistasSeleccionados.splice(index, 1);
+  }
+
+  getNombreArtista(id: number): string {
+    const artista = this.artistas.find(a => a.id === id);
+    return artista ? artista.nombre : 'Desconocido';
+  }
+
+  artistasDisponibles(): any[] {
+    return this.artistas.filter(artista => 
+      !this.artistasSeleccionados.includes(artista.id)
+    );
+  }
+
+  // ========== MÉTODOS PARA TIPOS DE ENTRADA MÚLTIPLES ==========
+  
+  agregarTipoEntrada(): void {
+    if (!this.tipoEntradaSeleccionado || !this.precioEntrada || !this.disponibilidadEntrada) {
+      return;
+    }
+
+    const tipoId = Number(this.tipoEntradaSeleccionado);
+    
+    // Verificar que no esté ya agregado
+    if (this.tiposEntradaSeleccionados.some(e => e.tipoEntradaId === tipoId)) {
+      alert('Este tipo de entrada ya fue agregado');
+      return;
+    }
+
+    // Buscar el nombre del tipo de entrada
+    const tipoNombre = this.getNombreTipoEntrada(tipoId);
+
+    // Agregar el objeto completo
+    this.tiposEntradaSeleccionados.push({
+      tipoEntradaId: tipoId,
+      nombre: tipoNombre,
+      precio: this.precioEntrada,
+      disponibilidad: this.disponibilidadEntrada
+    });
+
+    // Limpiar campos
+    this.tipoEntradaSeleccionado = '';
+    this.precioEntrada = null;
+    this.disponibilidadEntrada = null;
+
+    console.log('Entradas configuradas:', this.tiposEntradaSeleccionados);
+  }
+
+  eliminarTipoEntrada(index: number): void {
+    this.tiposEntradaSeleccionados.splice(index, 1);
+  }
+
+  getNombreTipoEntrada(id: number): string {
+    const tipo = this.tiposEntrada.find(t => t.id === id);
+    return tipo ? tipo.entrada : 'Desconocido';
+  }
+
+  tiposEntradaDisponibles(): any[] {
+    return this.tiposEntrada.filter(tipo => 
+      !this.tiposEntradaSeleccionados.some(e => e.tipoEntradaId === tipo.id)
+    );
+  }
+
+  // ========== MÉTODOS ORIGINALES ==========
+
   get f() {
     return this.eventForm.controls;
   }
@@ -119,7 +202,6 @@ export class EventFormComponent {
       this.eventForm.patchValue({ imagen: file.name });
       this.eventForm.get('imagen')?.updateValueAndValidity();
 
-      // Crear preview de la imagen
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.imagePreview = e.target.result;
@@ -137,19 +219,39 @@ export class EventFormComponent {
 
   onSubmit(): void {
     this.submitted = true;
+
+    // Validar que haya al menos un artista
+    if (this.artistasSeleccionados.length === 0) {
+      alert('Debe agregar al menos un artista');
+      return;
+    }
+
+    // Validar que haya al menos un tipo de entrada
+    if (this.tiposEntradaSeleccionados.length === 0) {
+      alert('Debe agregar al menos un tipo de entrada');
+      return;
+    }
+
     if (this.eventForm.invalid) {
       return;
     }
     
     const formData = new FormData();
     
-    // Crear el objeto DTO con todos los datos del formulario
+    // Mapear las entradas al formato requerido por el backend
+    const entradasDetalle = this.tiposEntradaSeleccionados.map(entrada => ({
+      tipo: entrada.tipoEntradaId,
+      precio: entrada.precio,
+      disponibilidad: entrada.disponibilidad
+    }));
+    
+    // Crear el objeto DTO
     const dto = {
       evento: this.eventForm.get('nombreEvento')?.value,
       descripcion: this.eventForm.get('descripcion')?.value,
-      artistaId: [this.eventForm.get('artistaId')?.value],
+      artistaId: this.artistasSeleccionados,
       productorId: this.eventForm.get('productorId')?.value,
-      tipoEntradaId: [this.eventForm.get('tipoEntradaId')?.value],
+      entradasDetalle: entradasDetalle, // Array de objetos con precio y disponibilidad
       establecimientoId: this.eventForm.get('establecimientoId')?.value,
       clasificacionId: this.eventForm.get('clasificacionId')?.value,
       fecha: this.eventForm.get('fecha')?.value,
@@ -157,14 +259,16 @@ export class EventFormComponent {
       activo: this.eventForm.get('activo')?.value
     };
     
-    // Agregar el DTO como JSON string con el nombre 'dto'
     formData.append('dto', JSON.stringify(dto));
     
-    // Agregar la imagen por separado
     if (this.selectedFile) {
       formData.append('imagen', this.selectedFile, this.selectedFile.name);
     }
    
+    console.log('DTO enviado:', dto);
+    console.log('Artistas seleccionados:', this.artistasSeleccionados);
+    console.log('Entradas con precio y disponibilidad:', entradasDetalle);
+
     this.eventService.crearEvento(formData).subscribe({
       next: (response) => {
         console.log('Evento creado exitosamente:', response);
@@ -176,12 +280,18 @@ export class EventFormComponent {
         alert('Error al crear el evento');
       }
     });
-}
+  }
 
   resetForm(): void {
     this.submitted = false;
     this.eventForm.reset();
     this.selectedFile = null;
     this.imagePreview = null;
+    this.artistasSeleccionados = [];
+    this.artistaSeleccionado = '';
+    this.tiposEntradaSeleccionados = [];
+    this.tipoEntradaSeleccionado = '';
+    this.precioEntrada = null;
+    this.disponibilidadEntrada = null;
   }
 }

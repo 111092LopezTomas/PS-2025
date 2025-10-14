@@ -10,4 +10,5 @@ import java.util.Set;
 
 @Repository
 public interface TiposEntradaRepository extends JpaRepository<TiposEntradaEntity,Long> {
+
 }

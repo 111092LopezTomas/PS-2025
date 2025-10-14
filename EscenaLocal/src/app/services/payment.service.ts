@@ -24,4 +24,11 @@ export class PaymentService {
       cmd
     );
   }
+
+  createPreferenceForEvent(eventId: number, qty = 1, precio?: number) {
+  let url = `${environment.apiBase}/payments/create-preference/event/${eventId}?qty=${qty}`;
+  if (precio && precio > 0) url += `&precio=${precio}`;
+  return this.http.post<{ preferenceId: string; initPoint: string }>(url, {});
+}
+
 }

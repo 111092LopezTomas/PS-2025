@@ -43,22 +43,57 @@
               </small>
             </div>
 
-            <!-- Artista -->
+            <!-- Artistas (Múltiples) -->
             <div class="mb-3">
-              <label for="artistaId" class="form-label">Artista</label>
-              <select 
-                class="form-select" 
-                id="artistaId"
-                formControlName="artistaId"
-                [class.is-invalid]="submitted && f['artistaId'].errors">
-                <option value="">Seleccione un artista</option>
-                <option *ngFor="let artista of artistas" [value]="artista.id">
-                  {{ artista.nombre }}
-                </option>
-              </select>
-              <div class="invalid-feedback" *ngIf="submitted && f['artistaId'].errors">
-                Debe seleccionar un artista
+              <label class="form-label">Artistas</label>
+              
+              <!-- Selector de Artista -->
+              <div class="input-group">
+                <select 
+                  class="form-select" 
+                  id="artistaSelector"
+                  [(ngModel)]="artistaSeleccionado"
+                  [ngModelOptions]="{standalone: true}">
+                  <option value="">Seleccione un artista para agregar</option>
+                  <option *ngFor="let artista of artistasDisponibles()" [value]="artista.id">
+                    {{ artista.nombre }}
+                  </option>
+                </select>
+                <button 
+                  class="btn btn-primary" 
+                  type="button"
+                  (click)="agregarArtista()"
+                  [disabled]="!artistaSeleccionado">
+                  <i class="bi bi-plus-lg"></i> Agregar
+                </button>
               </div>
+
+              <!-- Lista de Artistas Seleccionados -->
+              <div class="mt-3" *ngIf="artistasSeleccionados.length > 0">
+                <label class="form-label fw-bold">Artistas agregados:</label>
+                <div class="list-group">
+                  <div *ngFor="let artista of artistasSeleccionados; let i = index" 
+                       class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <i class="bi bi-person-fill text-primary me-2"></i>
+                      <span>{{ getNombreArtista(artista) }}</span>
+                    </div>
+                    <button 
+                      type="button" 
+                      class="btn btn-sm btn-outline-danger"
+                      (click)="eliminarArtista(i)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mensaje de validación -->
+              <div class="text-danger small mt-2" *ngIf="submitted && artistasSeleccionados.length === 0">
+                Debe agregar al menos un artista
+              </div>
+
+              <!-- Spinner de carga -->
               <div class="text-center mt-2" *ngIf="isLoading && artistas.length === 0">
                 <div class="spinner-border spinner-border-sm text-primary" role="status">
                   <span class="visually-hidden">Cargando...</span>
@@ -84,21 +119,95 @@
               </div>
             </div>
 
-            <!-- Tipo de Entrada -->
+            <!-- Tipo de Entrada (Múltiples con precio y disponibilidad) -->
             <div class="mb-3">
-              <label for="tipoEntradaId" class="form-label">Tipo de Entrada</label>
-              <select 
-                class="form-select" 
-                id="tipoEntradaId"
-                formControlName="tipoEntradaId"
-                [class.is-invalid]="submitted && f['tipoEntradaId'].errors">
-                <option value="">Seleccione un tipo de entrada</option>
-                <option *ngFor="let tipo of tiposEntrada" [value]="tipo.id">
-                  {{ tipo.entrada }}
-                </option>
-              </select>
-              <div class="invalid-feedback" *ngIf="submitted && f['tipoEntradaId'].errors">
-                Debe seleccionar un tipo de entrada
+              <label class="form-label">Tipos de Entrada</label>
+              
+              <!-- Selector de Tipo de Entrada con Precio y Disponibilidad -->
+              <div class="card bg-light p-3">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label small">Tipo de Entrada</label>
+                    <select 
+                      class="form-select" 
+                      [(ngModel)]="tipoEntradaSeleccionado"
+                      [ngModelOptions]="{standalone: true}">
+                      <option value="">Seleccione un tipo</option>
+                      <option *ngFor="let tipo of tiposEntradaDisponibles()" [value]="tipo.id">
+                        {{ tipo.entrada }}
+                      </option>
+                    </select>
+                  </div>
+                  
+                  <div class="col-md-3">
+                    <label class="form-label small">Precio</label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      [(ngModel)]="precioEntrada"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="Ej: 5000"
+                      min="0">
+                  </div>
+
+                  <div class="col-md-3">
+                    <label class="form-label small">Disponibilidad</label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      [(ngModel)]="disponibilidadEntrada"
+                      [ngModelOptions]="{standalone: true}"
+                      placeholder="Ej: 100"
+                      min="0">
+                  </div>
+                </div>
+
+                <button 
+                  class="btn btn-primary mt-3 w-100" 
+                  type="button"
+                  (click)="agregarTipoEntrada()"
+                  [disabled]="!tipoEntradaSeleccionado || !precioEntrada || !disponibilidadEntrada">
+                  <i class="bi bi-plus-lg"></i> Agregar Entrada
+                </button>
+              </div>
+
+              <!-- Lista de Tipos de Entrada Seleccionados -->
+              <div class="mt-3" *ngIf="tiposEntradaSeleccionados.length > 0">
+                <label class="form-label fw-bold">Entradas configuradas:</label>
+                <div class="list-group">
+                  <div *ngFor="let entrada of tiposEntradaSeleccionados; let i = index" 
+                       class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center mb-2">
+                          <i class="bi bi-ticket-perforated text-primary me-2"></i>
+                          <strong>{{ entrada.nombre }}</strong>
+                        </div>
+                        <div class="d-flex gap-3 text-muted small">
+                          <span>
+                            <i class="bi bi-currency-dollar"></i> 
+                            Precio: <strong>${{ entrada.precio }}</strong>
+                          </span>
+                          <span>
+                            <i class="bi bi-people"></i> 
+                            Disponibilidad: <strong>{{ entrada.disponibilidad }}</strong>
+                          </span>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="eliminarTipoEntrada(i)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mensaje de validación -->
+              <div class="text-danger small mt-2" *ngIf="submitted && tiposEntradaSeleccionados.length === 0">
+                Debe agregar al menos un tipo de entrada
               </div>
             </div>
 
@@ -245,3 +354,13 @@
     </div>
   </div>
 </div>
+
+<style>
+.list-group-item {
+  transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+  background-color: #f8f9fa;
+}
+</style>

@@ -26,10 +26,15 @@
   <div class="row">
     <!-- Imagen Principal -->
     <div class="col-lg-6 mb-4">
-      <div class="event-image-container">
+      <div class="event-image-container position-relative">
         <img [src]="apiBase + '/eventos/' + evento.id + '/imagen'" class="img-fluid rounded shadow-lg">
+<<<<<<< Updated upstream
+        <span class="badge bg-danger position-absolute top-0 end-0 m-3"
+          *ngIf="primeraEntrada && primeraEntrada.disponibilidad < 100">
+=======
         <span class="badge bg-danger position-absolute top-0 end-0 m-3" 
               *ngIf="disponibilidad < 100">
+>>>>>>> Stashed changes
           ¡Pocas entradas!
         </span>
       </div>
@@ -74,15 +79,39 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div class="col-12 mt-3">
+          <div class="col-12 mt-3">
             <div id="map" style="width: 100%; height: 400px; border-radius: 8px;"></div>
           </div>
 
+        </div>
+      </div>
+
       <!-- Precio y Compra -->
       <div class="pricing-section bg-dark text-white rounded p-4 mb-4">
+<<<<<<< Updated upstream
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <small class="d-block opacity-75">Precio por entrada</small>
+            <h2 class="mb-0 fw-bold">
+              ${{ primeraEntrada ? primeraEntrada.precio : 'N/A' }}
+            </h2>
+          </div>
+          <button class="btn btn-warning btn-lg px-5" (click)="comprarEntrada()"
+            [disabled]="!primeraEntrada || primeraEntrada.disponibilidad === 0">
+            <i class="bi bi-ticket-perforated me-2"></i>
+            {{ primeraEntrada && primeraEntrada.disponibilidad > 0 ? 'Comprar' : 'Agotado' }}
+          </button>
+        </div>
+        <div class="mt-3">
+          <small class="text-warning" *ngIf="primeraEntrada && primeraEntrada.disponibilidad > 0">
+            ⚠ Solo {{ primeraEntrada.disponibilidad }} entradas disponibles
+          </small>
+          <small class="text-danger" *ngIf="!primeraEntrada || primeraEntrada.disponibilidad === 0">
+            ❌ Entradas agotadas
+          </small>
+        </div>
+=======
   <div *ngFor="let entrada of evento.entradasDetalle; let first = first" 
        [class.mt-3]="!first"
        [class.pt-3]="!first"
@@ -94,6 +123,7 @@
       <div>
         <small class="d-block opacity-75">{{ entrada.tipo }}</small>
         <h2 class="mb-0 fw-bold">${{ entrada.precio }}</h2>
+>>>>>>> Stashed changes
       </div>
       <button class="btn btn-warning btn-lg px-5"
               (click)="comprarEntrada(entrada)"
@@ -114,7 +144,8 @@
   </div>
 </div>
 
-      <!-- Botones de Acción
+      <!-- Botones de Acción -->
+      <!--
       <div class="d-flex gap-2">
         <button class="btn btn-outline-primary flex-grow-1" (click)="compartirEvento()">
           <i class="bi bi-share me-2"></i>Compartir
@@ -122,7 +153,8 @@
         <button class="btn btn-outline-secondary">
           <i class="bi bi-heart"></i>
         </button>
-      </div> -->
+      </div>
+      -->
     </div>
   </div>
 
@@ -132,7 +164,7 @@
       <div class="description-section">
         <h4 class="fw-bold mb-3">Acerca del Evento</h4>
         <p class="lead text-muted">{{ evento.descripcion }}</p>
-        
+
         <div class="mt-4">
           <span class="badge bg-secondary me-2">
             <i class="bi bi-hourglass-split me-1"></i>{{ evento.duracion }}

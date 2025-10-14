@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 @Entity
@@ -27,7 +28,8 @@ public class EventoTiposEntradaEntity {
     @JoinColumn(name = "id_tipos_entrada")
     private TiposEntradaEntity tiposEntrada;
 
-    private Double precio;
+    @Column(name = "precio", precision = 12, scale = 2, nullable = false)
+    private BigDecimal precio;
 
     private Integer disponibilidad;
 

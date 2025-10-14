@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.example.escenalocal.dtos.get.GetEntradaDto;
 import org.example.escenalocal.dtos.get.GetEventoDto;
+import org.example.escenalocal.dtos.post.PostEntradaDetalleDto;
 import org.example.escenalocal.dtos.post.PostEventoDto;
 import org.example.escenalocal.dtos.put.PutEventoDto;
 import org.example.escenalocal.entities.*;
@@ -71,7 +72,7 @@ public class EventoServiceImpl implements EventoService {
         e.getFecha(),
         e.getHora(),
         artistas,
-        entradasDetalle, // ← ahora pasa lista tipada
+        entradasDetalle,
         e.getClasificacion().getClasificacion(),
         e.getProductor().getNombre(),
         est.getEstablecimiento(),
@@ -138,82 +139,107 @@ public class EventoServiceImpl implements EventoService {
       var evento = new EventoEntity();
       evento.setEvento(dto.getEvento());
       evento.setDescripcion(dto.getDescripcion());
-      evento.setFecha(LocalDate.parse(dto.getFecha()));
-      evento.setHora(LocalTime.parse(dto.getHora()));
-      evento.setActivo(dto.getActivo());
 
+      if (dto.getFecha() != null && !dto.getFecha().isBlank()) {
+        evento.setFecha(LocalDate.parse(dto.getFecha()));
+      }
+      if (dto.getHora() != null && !dto.getHora().isBlank()) {
+        evento.setHora(LocalTime.parse(dto.getHora()));
+      }
+      evento.setActivo(Boolean.TRUE.equals(dto.getActivo()));
+
+      // ---------- Relaciones obligatorias ----------
       var est = establecimientoRepository.findById(dto.getEstablecimientoId())
         .orElseThrow(() -> new EntityNotFoundException("Establecimiento no encontrado: " + dto.getEstablecimientoId()));
+
       var clas = clasificacionRepository.findById(dto.getClasificacionId())
         .orElseThrow(() -> new EntityNotFoundException("Clasificación no encontrada: " + dto.getClasificacionId()));
-      var prod = productorRepository.findById(dto.getProductorId())
-        .orElseThrow(() -> new EntityNotFoundException("Productor no encontrado: " + dto.getProductorId()));
 
       evento.setEstablecimiento(est);
       evento.setClasificacion(clas);
-      evento.setProductor(prod);
 
-      // ---------- Imagen (opcional) ----------
+      if (dto.getProductorId() != null) {
+        var prod = productorRepository.findById(dto.getProductorId())
+          .orElseThrow(() -> new EntityNotFoundException("Productor no encontrado: " + dto.getProductorId()));
+        evento.setProductor(prod);
+      }
+
+      // ---------- Imagen opcional ----------
       if (file != null && !file.isEmpty()) {
-        // Validaciones simples (ajusta a tu necesidad)
         String ct = file.getContentType() != null ? file.getContentType() : "application/octet-stream";
         if (!ct.startsWith("image/")) {
           throw new IllegalArgumentException("El archivo debe ser una imagen. Content-Type recibido: " + ct);
         }
-        long maxBytes = 10L * 1024 * 1024; // 10MB
+        long maxBytes = 10L * 1024 * 1024;
         if (file.getSize() > maxBytes) {
           throw new IllegalArgumentException("La imagen excede el tamaño máximo de 10MB");
         }
-
         try {
-          evento.setImagenNombre( file.getOriginalFilename() != null ? file.getOriginalFilename() : "archivo" );
+          evento.setImagenNombre(file.getOriginalFilename() != null ? file.getOriginalFilename() : "archivo");
           evento.setImagenContentType(ct);
-          evento.setImagenDatos(file.getBytes());    // <-- bytea OK
-          evento.setImagenTamano(file.getSize());    // <-- bigint OK (en img_tamano)
+          evento.setImagenDatos(file.getBytes());
+          evento.setImagenTamano(file.getSize());
         } catch (IOException e) {
           throw new RuntimeException("No se pudo leer la imagen: " + e.getMessage(), e);
         }
       }
 
-      // --- Cargar maestros EXISTENTES
-      var artistas = new HashSet<>(artistaRepository.findAllById(dto.getArtistaId()));
-      var tipos    = new HashSet<>(tiposEntradaRepository.findAllById(dto.getTipoEntradaId()));
+      // ---------- Artistas ----------
+      if (dto.getArtistaId() != null && !dto.getArtistaId().isEmpty()) {
+        var artistas = new HashSet<>(artistaRepository.findAllById(dto.getArtistaId()));
+        var okA = artistas.stream().map(ArtistaEntity::getId).collect(Collectors.toSet());
+        var faltA = dto.getArtistaId().stream().filter(id -> !okA.contains(id)).toList();
+        if (!faltA.isEmpty()) {
+          throw new EntityNotFoundException("Artistas no encontrados: " + faltA);
+        }
 
-      // --- Validar faltantes (evita 500 por FK)
-      var okA = artistas.stream().map(ArtistaEntity::getId).collect(Collectors.toSet());
-      var faltA = dto.getArtistaId().stream().filter(id -> !okA.contains(id)).toList();
-      if (!faltA.isEmpty()) throw new EntityNotFoundException("Artistas no encontrados: " + faltA);
-
-      var okT = tipos.stream().map(TiposEntradaEntity::getId).collect(Collectors.toSet());
-      var faltT = dto.getTipoEntradaId().stream().filter(id -> !okT.contains(id)).toList();
-      if (!faltT.isEmpty()) throw new EntityNotFoundException("Tipos de entrada no encontrados: " + faltT);
-
-      // --- Construir join-entities
-      for (ArtistaEntity a : artistas) {
-        var join = new ArtistaEventoEntity();
-        join.setEvento(evento);
-        join.setArtista(a);
-        join.setId(new ArtistaEventoId(null, a.getId()));
-        evento.getArtistasEvento().add(join);
-        a.getArtistaEventos().add(join);
+        for (ArtistaEntity a : artistas) {
+          var join = new ArtistaEventoEntity();
+          join.setEvento(evento);
+          join.setArtista(a);
+          join.setId(new ArtistaEventoId(null, a.getId()));
+          evento.getArtistasEvento().add(join);
+          a.getArtistaEventos().add(join);
+        }
       }
 
-      for (TiposEntradaEntity t : tipos) {
-        var join = new EventoTiposEntradaEntity();
-        join.setEvento(evento);
-        join.setTiposEntrada(t);
-        join.setId(new EventoTiposEntradaId(null, t.getId()));
-        evento.getEventoTiposEntrada().add(join);
-        t.getEventoTipos().add(join);
+      // ---------- Tipos de entrada + precio/disponibilidad ----------
+      if (dto.getEntradasDetalle() != null && !dto.getEntradasDetalle().isEmpty()) {
+
+        var idsTipos = dto.getEntradasDetalle().stream()
+          .map(PostEntradaDetalleDto::getTipo)
+          .filter(Objects::nonNull)
+          .collect(Collectors.toSet());
+
+        var tiposExistentes = new HashMap<Long, TiposEntradaEntity>();
+        tiposEntradaRepository.findAllById(idsTipos).forEach(t -> tiposExistentes.put(t.getId(), t));
+
+        var faltT = idsTipos.stream().filter(id -> !tiposExistentes.containsKey(id)).toList();
+        if (!faltT.isEmpty()) {
+          throw new EntityNotFoundException("Tipos de entrada no encontrados: " + faltT);
+        }
+
+        for (PostEntradaDetalleDto det : dto.getEntradasDetalle()) {
+          var tipo = tiposExistentes.get(det.getTipo());
+          var join = new EventoTiposEntradaEntity();
+          join.setEvento(evento);
+          join.setTiposEntrada(tipo);
+          join.setId(new EventoTiposEntradaId(null, tipo.getId()));
+
+          join.setPrecio(det.getPrecio());
+          join.setDisponibilidad(det.getDisponibilidad()); // número entero
+
+          evento.getEventoTiposEntrada().add(join);
+          tipo.getEventoTipos().add(join);
+        }
       }
 
       var saved = eventoRepository.save(evento);
       return modelMapper.map(saved, GetEventoDto.class);
-
-
     }
 
-    @Override
+
+  @Override
     public GetEventoDto updateEvento(Long id, PutEventoDto putEventoDto) {
         return null;
     }

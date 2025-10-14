@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { EventGet, EventService } from '../../services/event.service';
+import { EntradaDto, EventGet, EventService } from '../../services/event.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
@@ -26,6 +26,9 @@ export class EventViewComponent {
     //  bandera para saber si el mapa ya se inicializó
   mapaInicializado: boolean = false; 
 
+  disponibilidad: number = 0;
+  precio: number = 0;
+
   constructor(
     private eventService: EventService,
     private route: ActivatedRoute,
@@ -38,6 +41,7 @@ export class EventViewComponent {
       this.eventoId = +params['id']; // El '+' convierte string a number
       this.cargarEvento();
     });
+
   }
 
   get primeraEntrada() {
@@ -54,11 +58,13 @@ export class EventViewComponent {
       next: (data) => {
         this.evento = data;
         this.loading = false;
+
           //  Inicializar el mapa solo cuando se cargó el evento
         if (!this.mapaInicializado) {
           this.initMap(); 
           this.mapaInicializado = true; 
         }
+
       },
       error: (err) => {
         this.error =
@@ -69,22 +75,23 @@ export class EventViewComponent {
     });
   }
 
-  comprarEntrada(): void {
+  comprarEntrada(entrada?: EntradaDto): void {
+  if (entrada) {
+    // Navega con datos de la entrada específica
+    this.router.navigate(['/checkout'], { 
+      queryParams: { 
+        eventoId: this.eventoId,
+        tipo: entrada.tipo,
+        precio: entrada.precio
+      } 
+    });
+  } else {
+    // Tu comportamiento original
     this.router.navigate(['/checkout']);
-    /* if (!this.evento) return;
 
-    this.eventService.comprarEntrada(this.evento.id, 1).subscribe({
-      next: (response) => {
-        alert('¡Compra realizada con éxito!');
-        // Recargar evento para actualizar entradas disponibles
-        this.cargarEvento();
-      },
-      error: (err) => {
-        alert('Error al procesar la compra. Intenta nuevamente.');
-        console.error('Error en compra:', err);
-      }
-    }); */
   }
+}
+
 
   /* compartirEvento(): void {
     if (!this.evento) return;
@@ -105,6 +112,7 @@ export class EventViewComponent {
   reintentar(): void {
     this.cargarEvento();
   }
+
 
   //  Método para inicializar Google Maps
   initMap(): void { 
@@ -134,4 +142,21 @@ export class EventViewComponent {
       } 
     }); 
   } 
+
+  getPrecioMinimo(): number {
+    return this.evento?.entradasDetalle ? Math.min(...this.evento.entradasDetalle.map(e => e.precio)) : 0;
+  }
+
+  getPrecioMaximo(): number {
+    return this.evento?.entradasDetalle ? Math.max(...this.evento.entradasDetalle.map(e => e.precio)) : 0;
+  }
+
+  getTotalDisponibilidad(): number {
+    return this.evento?.entradasDetalle?.reduce((sum, e) => sum + e.disponibilidad, 0) || 0;
+  }
+
+  getCapacidadInicial(entrada: EntradaDto): number {
+    return entrada.disponibilidad * 1.5; // Estimación para la barra de progreso
+  }
+
 }

@@ -6,4 +6,5 @@ import com.mercadopago.exceptions.MPException;
 public interface PaymentGateway {
   CreatePrefResult createPreference(CreatePrefCommand cmd) throws MPException, MPApiException;
   PaymentStatus getStatus(String externalReferenceOrPaymentId);
+  CreatePrefResult createPreferenceWithBase(CreatePrefCommand cmd, String baseUrl) throws MPException, MPApiException;
 }

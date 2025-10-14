@@ -11,6 +11,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class GetEntradaDto {
   private String tipo;
-  private Double precio;
+  private BigDecimal precio;
   private Integer disponibilidad;
 }
