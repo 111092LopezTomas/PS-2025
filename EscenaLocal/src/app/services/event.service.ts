@@ -18,6 +18,7 @@ export interface EventGet {
   artistas: String[];
   clasificacion: String;
   establecimiento: String;
+  barrio: String;
   ciudad: String;
   provincia: String;
   imagen: string;

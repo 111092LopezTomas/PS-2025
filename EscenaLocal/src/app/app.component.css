@@ -1,0 +1,33 @@
+
+
+
+/* Navbar personalizado */
+.navbar-custom {
+    background-color: #FF6600; /* color naranja */   
+    transition: background-color 0.3s ease; /* suaviza el cambio */
+}
+
+.navbar-custom:hover {
+    background-color: hsl(32, 99%, 48%); /* naranja más claro al pasar el mouse */
+}
+
+
+
+.footer-colorido {
+    background: linear-gradient(135deg, #FF6600, #FF8C42); /* degradado naranja cálido */
+    color: rgb(29, 26, 233); /* texto blanco para contraste */
+}
+.footer-colorido a {
+    color: #000000; /* links amarillos */
+    transition: color 0.3s ease;
+}
+.btn-f:hover {
+  background-color: hsl(246, 99%, 48%); /* un gris un poco más oscuro al pasar el mouse */
+  background: linear-gradient(135deg, #0051ff, #2400a8);
+  border-color: #000000;
+}
+.btn-ig:hover {
+  background-color: hsl(303, 99%, 48%); /* un gris un poco más oscuro al pasar el mouse */
+  background: linear-gradient(135deg, #ff00c8, #b40096);
+  border-color: #000000;
+}

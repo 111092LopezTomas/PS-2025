@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/escenadb
     username: postgres
-    password: postgres
+    password: programacion93
   jpa:
     hibernate:
       ddl-auto: update
