@@ -1,0 +1,71 @@
+<nav class="navbar navbar-custom px-3">
+  <!-- Logo / Imagen izquierda -->
+  <a class="navbar-brand d-flex align-items-center" href="#">
+    <img src="assets/img/logo.png" alt="logo" width="80" height="80">
+  </a>
+
+  <!-- Buscador -->
+  <div class="d-flex mt-3; align-items-center">
+    <div class="input-group rounded-pill shadow-sm " style="max-width: 600px; overflow: hidden;">
+      <!-- Icono de ubicación -->
+      <span class="input-group-text bg-white border-0">
+        <i class="bi bi-geo-alt-fill text-danger"></i>
+      </span>
+
+      <!-- Select de provincias -->
+      <select class="form-select border-0 shadow-none">
+        <option selected>Selecciona una provincia</option>
+        <option value="1">Buenos Aires</option>
+        <option value="2">Córdoba</option>
+        <option value="3">Santa Fe</option>
+      </select>
+
+      <!-- Campo de búsqueda -->
+      <input type="text" class="form-control border-0 shadow-none" placeholder="Buscar Eventos">
+
+      <!-- Icono de búsqueda -->
+      <span class="input-group-text bg-white border-0">
+        <i class="bi bi-search text-muted"></i>
+      </span>
+    </div>
+    <!-- Ayuda -->
+    <li class="nav-item me-3" style="margin-left: 40px; list-style: none;">
+      <a class="nav-link text-light" href="#">
+        <i class="bi bi-question-circle fs-3"></i>
+      </a>
+    </li>
+  </div>
+
+  <!-- Notificaciones y Usuario -->
+  <ul class="navbar-nav d-flex flex-row ms-auto align-items-center">
+
+    <!-- Campanita -->
+    <li class="nav-item me-3">
+      <a class="nav-link text-light" href="#">
+        <i class="bi bi-bell fs-3"></i>
+      </a>
+    </li>
+
+    <!-- Usuario con dropdown -->
+    <li class="nav-item dropdown">
+      <!-- Toggle: imagen + flechita -->
+      <a class="nav-link d-flex align-items-center text-light dropdown-toggle" href="#" role="button"
+        data-bs-toggle="dropdown" aria-expanded="false">
+        <img [src]="imagenUrl" alt="Usuario" class="rounded-circle me-2" width="60" height="60">
+      </a>
+      <!-- Menú desplegable hacia abajo -->
+
+      <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end mt-2 custom-dropdown"
+        style="position: absolute; top: 100%; right: 0;">
+        <li *ngIf="!isLoggedIn()">
+          <button class="dropdown-item custom-item" (click)="irAlLogin()">Iniciar sesión</button>
+        </li>
+        <li *ngIf="isLoggedIn()">
+          <button class="dropdown-item custom-item text-danger" (click)="cerrarSesion()">Cerrar sesión</button>
+        </li>
+      </ul>
+
+    </li>
+
+  </ul>
+</nav>

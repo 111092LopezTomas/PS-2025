@@ -1,22 +1,29 @@
 spring:
-  application:
-    name: EscenaLocal
   datasource:
     url: jdbc:postgresql://localhost:5432/escenadb
     username: postgres
     password: programacion93
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        dll-auto: update
     show-sql: true
 
+springdoc:
+  api-docs:
+    version: OPENAPI_3_0
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    operationsSorter: method
+    tagsSorter: alpha
 
 server:
-  port:  8080
+  port: 8080
 
 logging:
   level:
@@ -30,15 +37,13 @@ logging:
           descriptor:
             sql: TRACE
 
-#jwt:
-#  # Clave segura en Base64
-#  secret: bXlTZWNyZXRLZXkxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
-#
-#  # Tiempo de expiración del token (en milisegundos)
-#  expiration: 86400000  # 24 horas
-#  refreshExpiration: 1209600000 # 14 days
 mercadopago:
   public-key: TEST-4d19c6e3-1755-4fd7-bdd1-caafb85cb62e
   access-token: TEST-322033363091622-101020-39222800df17823accd071f661d894bb-1465029993
   webhook-secret: ${MP_WEBHOOK_SECRET:TEST-SECRET}
   enable-webhook: false
+
+jwt:
+  secret: "MiSecretoMuyLargoYSeguro_ChangeMe!"
+  expiration: 3600000   # 1 hora en milisegundos
+

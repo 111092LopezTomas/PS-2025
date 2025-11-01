@@ -1,9 +1,23 @@
 import { Component } from '@angular/core';
-import { EntradaDto, EventGet, EventService } from '../../services/event.service';
+import {
+  EntradaDto,
+  EventGet,
+  EventService,
+} from '../../services/event.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import * as L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
-declare const google: any; //  Para Google Maps
+// Corrige la ubicación de los íconos de Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+  iconUrl: 'assets/leaflet/marker-icon.png',
+  shadowUrl: 'assets/leaflet/marker-shadow.png',
+});
+
 
 @Component({
   selector: 'app-event-view',
@@ -16,15 +30,13 @@ export class EventViewComponent {
     id: 0,
     evento: '',
     entradasDetalle: [],
-    
   } as any;
   loading: boolean = true;
   error: string = '';
   eventoId: number = 0;
   apiBase = 'http://localhost:8080';
 
-    //  bandera para saber si el mapa ya se inicializó
-  mapaInicializado: boolean = false; 
+  mapaInicializado: boolean = false;
 
   disponibilidad: number = 0;
   precio: number = 0;
@@ -41,7 +53,6 @@ export class EventViewComponent {
       this.eventoId = +params['id']; // El '+' convierte string a number
       this.cargarEvento();
     });
-
   }
 
   get primeraEntrada() {
@@ -58,13 +69,13 @@ export class EventViewComponent {
       next: (data) => {
         this.evento = data;
         this.loading = false;
-
-          //  Inicializar el mapa solo cuando se cargó el evento
-        if (!this.mapaInicializado) {
-          this.initMap(); 
-          this.mapaInicializado = true; 
+        if (data.direccion && !this.mapaInicializado) {
+          this.mostrarMapa(
+            this.evento.direccion.toString(),
+            this.evento.establecimiento.toString(),
+            this.evento.ciudad.toString()
+          );
         }
-
       },
       error: (err) => {
         this.error =
@@ -75,88 +86,80 @@ export class EventViewComponent {
     });
   }
 
-  comprarEntrada(entrada?: EntradaDto): void {
-  if (entrada) {
-    // Navega con datos de la entrada específica
-    this.router.navigate(['/checkout'], { 
-      queryParams: { 
-        eventoId: this.eventoId,
-        tipo: entrada.tipo,
-        precio: entrada.precio
-      } 
-    });
-  } else {
-    // Tu comportamiento original
-    this.router.navigate(['/checkout']);
+  mostrarMapa(direccion: string, establecimiento: string, ciudad: string): void {
+    // Llamada a Photon para obtener coordenadas
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(direccion + ', ' + ciudad)}&limit=1&lang=en`;
 
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.features || data.features.length === 0) {
+          console.warn('No se encontraron coordenadas para la dirección.');
+          return;
+        }
+
+        const coords = data.features[0].geometry.coordinates;
+        const lon = coords[0];
+        const lat = coords[1];
+
+        const map = L.map('map').setView([lat, lon], 17);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors',
+        }).addTo(map);
+
+        L.marker([lat, lon])
+          .addTo(map)
+          .bindPopup(`<b>${establecimiento}</b><br>${direccion}`)
+          .openPopup();
+
+        this.mapaInicializado = true;
+      })
+      .catch((err) => console.error('Error en geocodificación Photon:', err));
   }
-}
 
-
-  /* compartirEvento(): void {
-    if (!this.evento) return;
-    
-    const url = window.location.href;
-    if (navigator.share) {
-      navigator.share({
-        title: this.evento.evento,
-        text: `Mira este evento: ${this.evento.evento}`,
-        url: url
-      }).catch(err => console.log('Error al compartir:', err));
+  comprarEntrada(entrada?: EntradaDto): void {
+    if (entrada) {
+      // Navega con datos de la entrada específica
+      this.router.navigate(['/checkout'], {
+        queryParams: {
+          eventoId: this.eventoId,
+          tipo: entrada.tipo,
+          precio: entrada.precio,
+        },
+      });
     } else {
-      navigator.clipboard.writeText(url);
-      alert('Link copiado al portapapeles');
+      // Tu comportamiento original
+      this.router.navigate(['/checkout']);
     }
-  } */
+  }
 
   reintentar(): void {
     this.cargarEvento();
   }
 
-
-  //  Método para inicializar Google Maps
-  initMap(): void { 
-    if (!this.evento) return; 
-    //  : Concatenar dirección completa para geocodificación
-    const direccionCompleta = `${this.evento.direccion}, ${this.evento.barrio}, Ciudad, País`; // AGREGADO: reemplazar Ciudad/País si es necesario
-
-    const geocoder = new google.maps.Geocoder(); 
-    geocoder.geocode({ address: direccionCompleta }, (results: any, status: any) => { // AGREGADO
-      if (status === 'OK') { 
-        const location = results[0].geometry.location; 
-
-        // Crear mapa
-        const map = new google.maps.Map(document.getElementById('map'), { // AGREGADO
-          zoom: 15, 
-          center: location 
-        }); 
-
-        // Agregar marcador
-        new google.maps.Marker({ 
-          position: location, 
-          map: map, 
-          title: this.evento.establecimiento 
-        }); 
-      } else { 
-        console.error('No se pudo encontrar la ubicación: ' + status); // AGREGADO
-      } 
-    }); 
-  } 
-
   getPrecioMinimo(): number {
-    return this.evento?.entradasDetalle ? Math.min(...this.evento.entradasDetalle.map(e => e.precio)) : 0;
+    return this.evento?.entradasDetalle
+      ? Math.min(...this.evento.entradasDetalle.map((e) => e.precio))
+      : 0;
   }
 
   getPrecioMaximo(): number {
-    return this.evento?.entradasDetalle ? Math.max(...this.evento.entradasDetalle.map(e => e.precio)) : 0;
+    return this.evento?.entradasDetalle
+      ? Math.max(...this.evento.entradasDetalle.map((e) => e.precio))
+      : 0;
   }
 
   getTotalDisponibilidad(): number {
-    return this.evento?.entradasDetalle?.reduce((sum, e) => sum + e.disponibilidad, 0) || 0;
+    return (
+      this.evento?.entradasDetalle?.reduce(
+        (sum, e) => sum + e.disponibilidad,
+        0
+      ) || 0
+    );
   }
 
   getCapacidadInicial(entrada: EntradaDto): number {
     return entrada.disponibilidad * 1.5; // Estimación para la barra de progreso
   }
-
 }

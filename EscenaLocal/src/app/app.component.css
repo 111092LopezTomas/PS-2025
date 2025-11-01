@@ -1,18 +1,3 @@
-
-
-
-/* Navbar personalizado */
-.navbar-custom {
-    background-color: #FF6600; /* color naranja */   
-    transition: background-color 0.3s ease; /* suaviza el cambio */
-}
-
-.navbar-custom:hover {
-    background-color: hsl(32, 99%, 48%); /* naranja más claro al pasar el mouse */
-}
-
-
-
 .footer-colorido {
     background: linear-gradient(135deg, #FF6600, #FF8C42); /* degradado naranja cálido */
     color: rgb(29, 26, 233); /* texto blanco para contraste */
@@ -31,3 +16,4 @@
   background: linear-gradient(135deg, #ff00c8, #b40096);
   border-color: #000000;
 }
+

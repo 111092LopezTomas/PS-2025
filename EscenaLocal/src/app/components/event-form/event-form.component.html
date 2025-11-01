@@ -2,7 +2,7 @@
   <div class="row justify-content-center">
     <div class="col-md-8">
       <div class="card shadow">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-ornage bg-custom text-white">
           <h3 class="mb-0">Crear Nuevo Evento</h3>
         </div>
         <div class="card-body">
@@ -60,7 +60,7 @@
                   </option>
                 </select>
                 <button 
-                  class="btn btn-primary" 
+                  class="btn btn-orange" 
                   type="button"
                   (click)="agregarArtista()"
                   [disabled]="!artistaSeleccionado">
@@ -163,7 +163,7 @@
                 </div>
 
                 <button 
-                  class="btn btn-primary mt-3 w-100" 
+                  class="btn btn-orange mt-3 w-100" 
                   type="button"
                   (click)="agregarTipoEntrada()"
                   [disabled]="!tipoEntradaSeleccionado || !precioEntrada || !disponibilidadEntrada">
@@ -343,7 +343,7 @@
               </button>
               <button 
                 type="submit" 
-                class="btn btn-primary"
+                class="btn btn-orange"
                 [disabled]="isLoading">
                 Crear Evento
               </button>

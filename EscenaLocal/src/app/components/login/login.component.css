@@ -29,18 +29,3 @@
   box-shadow: none;
   opacity: 0.7;
 }
-
-.bg-orange {
-  background-color: #ff7b00;
-  color: white;
-}
-
-/* Bg personalizado */
-.bg-custom {
-    background-color: #FF6600; /* color naranja */   
-    transition: background-color 0.3s ease; /* suaviza el cambio */
-}
-
-.bg-custom:hover {
-    background-color: hsl(32, 99%, 48%); /* naranja más claro al pasar el mouse */
-}

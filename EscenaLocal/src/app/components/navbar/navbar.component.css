@@ -1,0 +1,36 @@
+/* Navbar personalizado */
+.navbar-custom {
+    background-color: #FF6600; /* color naranja */   
+    transition: background-color 0.3s ease; /* suaviza el cambio */
+}
+
+.navbar-custom:hover {
+    background-color: hsl(32, 99%, 48%); /* naranja más claro al pasar el mouse */
+}
+
+/* Dropdown custom */
+.custom-dropdown {
+  background-color: #1e1e1e; /* fondo oscuro personalizado */
+  border: none;
+  min-width: 160px;
+}
+
+/* Botón iniciar sesión */
+.custom-item {
+  color: rgba(255, 123, 0, 0.7); /* naranja opaca */
+  font-weight: 600;
+  transition: color 0.3s ease, transform 0.2s ease;
+  background-color: transparent;
+  border: none;
+}
+
+/* Hover: más brillante progresivamente */
+.custom-item:hover {
+  color: rgba(255, 123, 0, 1); /* naranja brillante */
+  transform: translateX(4px); /* pequeño efecto de movimiento */
+}
+
+/* Para que el cursor sea pointer */
+.custom-item {
+  cursor: pointer;
+}
