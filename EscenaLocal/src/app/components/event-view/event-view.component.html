@@ -34,8 +34,14 @@
         Volver
       </button>
       <div class="event-image-container">
-        <img [src]="apiBase + '/eventos/' + evento.id + '/imagen'" class="img-fluid rounded shadow-lg">
-        <span class="badge bg-danger position-absolute top-0 end-0 m-3" *ngIf="disponibilidad < 100">
+        <img
+          [src]="apiBase + '/eventos/' + evento.id + '/imagen'"
+          class="img-fluid rounded shadow-lg"
+        />
+        <span
+          class="badge bg-danger position-absolute top-0 end-0 m-3"
+          *ngIf="disponibilidad < 100"
+        >
           ¡Pocas entradas!
         </span>
       </div>
