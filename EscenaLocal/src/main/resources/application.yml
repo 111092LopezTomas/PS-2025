@@ -33,13 +33,13 @@ logging:
           descriptor:
             sql: TRACE
 
-#jwt:
-#  # Clave segura en Base64
-#  secret: bXlTZWNyZXRLZXkxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
-#
-#  # Tiempo de expiración del token (en milisegundos)
-#  expiration: 86400000  # 24 horas
-#  refreshExpiration: 1209600000 # 14 days
+jwt:
+  # Clave segura en Base64
+  secret: bXlTZWNyZXRLZXkxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTA=
+
+  # Tiempo de expiración del token (en milisegundos)
+  expiration: 86400000  # 24 horas
+  refreshExpiration: 1209600000 # 14 days
 mercadopago:
   public-key: TEST-4d19c6e3-1755-4fd7-bdd1-caafb85cb62e
   access-token: TEST-322033363091622-101020-39222800df17823accd071f661d894bb-1465029993
