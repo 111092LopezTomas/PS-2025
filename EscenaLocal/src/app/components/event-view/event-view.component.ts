@@ -40,7 +40,6 @@ export class EventViewComponent {
 
   disponibilidad: number = 0;
   precio: number = 0;
-  entrada!: EntradaDto;
 
   constructor(
     private eventService: EventService,
