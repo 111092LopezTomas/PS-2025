@@ -14,9 +14,13 @@ public class GetEstablecimientoDto {
 
   private String establecimiento;
 
-  private String direccion;
-
   private Integer capacidad;
 
+  private String direccion;
+
   private String barrio;
+
+  private String ciudad;
+
+  private String provincia;
 }

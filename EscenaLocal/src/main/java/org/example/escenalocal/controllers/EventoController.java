@@ -101,4 +101,46 @@ public class EventoController {
     eventoService.eliminarImagen(id);
     return ResponseEntity.noContent().build();
   }
+
+  @Operation(summary = "Actualizar evento existente (multipart)")
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+    required = true,
+    content = @Content(
+      mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+      schema = @Schema(implementation = CreateEventoMultipart.class),
+      encoding = {
+        @Encoding(name = "dto", contentType = MediaType.APPLICATION_JSON_VALUE),
+        @Encoding(name = "imagen", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+      }
+    )
+  )
+  @PutMapping(path = "/editar/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<GetEventoDto> actualizarEvento(
+    @PathVariable Long id,
+    @RequestPart("dto") String dtoJson,
+    @RequestPart(value = "imagen", required = false) MultipartFile imagen
+  ) throws JsonProcessingException {
+
+    ObjectMapper mapper = new ObjectMapper();
+    var dto = mapper.readValue(dtoJson, org.example.escenalocal.dtos.put.PutEventoDto.class);
+
+    var updated = eventoService.updateEvento(id, dto);
+
+    // si también viene imagen, la actualiza aparte
+    if (imagen != null && !imagen.isEmpty()) {
+      eventoService.actualizarImagen(id, imagen);
+      // recargar datos actualizados con imagen incluida
+      updated = eventoService.getEventoById(id);
+    }
+
+    return ResponseEntity.ok(updated);
+  }
+
+  @GetMapping("/establecimientos/{id}")
+  public ResponseEntity<List<GetEventoDto>> getEventosByEstablecimientoId(@PathVariable Long id) {
+    List<GetEventoDto> eventosDtos = eventoService.getEventosByEstablecimientoId(id);
+
+    return ResponseEntity.ok(eventosDtos);
+  }
+
 }

@@ -1,6 +1,5 @@
 package org.example.escenalocal.services.impl;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.example.escenalocal.dtos.get.GetEstablecimientoDto;
@@ -10,7 +9,6 @@ import org.example.escenalocal.services.EstablecimientoService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,23 +22,52 @@ public class EstablecimientoServiceImpl implements EstablecimientoService {
 
   @Override
   public List<GetEstablecimientoDto> getEstablecimientos() {
-    List<EstablecimientoEntity> establecimientoEntities = establecimientoRepository.findAll();
-    List<GetEstablecimientoDto> list = new ArrayList<>();
-    for (EstablecimientoEntity establecimientoEntity : establecimientoEntities) {
-      GetEstablecimientoDto getEstablecimientoDto = modelMapper.map(establecimientoEntity, GetEstablecimientoDto.class);
-      list.add(getEstablecimientoDto);
+
+      return establecimientoRepository.finAllEstablecimientos()
+        .stream()
+        .map(this::toDto)
+        .toList();
     }
 
-    return list;
-  }
+    private GetEstablecimientoDto toDto(EstablecimientoEntity es) {
+      return new GetEstablecimientoDto(
+        es.getId(),
+        es.getEstablecimiento(),
+        es.getCapacidad(),
+        es.getDireccion(),
+        es.getBarrio() != null ? es.getBarrio().getBarrio() : null,
+        es.getBarrio() != null && es.getBarrio().getCiudad() != null
+          ? es.getBarrio().getCiudad().getCiudad()
+          : null,
+        es.getBarrio() != null
+          && es.getBarrio().getCiudad() != null
+          && es.getBarrio().getCiudad().getProvincia() != null
+          ? es.getBarrio().getCiudad().getProvincia().getProvincia()
+          : null
+      );
+    }
+
 
   @Override
   public GetEstablecimientoDto getEstablecimientoById(Long id) {
-    EstablecimientoEntity establecimientoEntity = establecimientoRepository.findById(id)
-      .orElseThrow(() -> new EntityNotFoundException("Establecimiento not found with id: " + id));
+    EstablecimientoEntity es = establecimientoRepository
+      .findEstablecimientoById(id)
+      .orElseThrow(() -> new RuntimeException("No existe establecimiento " + id));
 
-    GetEstablecimientoDto getEstablecimientoDto =  modelMapper.map(establecimientoEntity, GetEstablecimientoDto.class);
-
-    return getEstablecimientoDto;
+    return new GetEstablecimientoDto(
+      es.getId(),
+      es.getEstablecimiento(),
+      es.getCapacidad(),
+      es.getDireccion(),
+      es.getBarrio() != null ? es.getBarrio().getBarrio() : null,
+      es.getBarrio() != null && es.getBarrio().getCiudad() != null
+        ? es.getBarrio().getCiudad().getCiudad()
+        : null,
+      es.getBarrio() != null
+        && es.getBarrio().getCiudad() != null
+        && es.getBarrio().getCiudad().getProvincia() != null
+        ? es.getBarrio().getCiudad().getProvincia().getProvincia()
+        : null
+    );
   }
 }

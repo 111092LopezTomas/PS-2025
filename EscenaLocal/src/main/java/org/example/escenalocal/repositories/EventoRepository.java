@@ -13,85 +13,21 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-//public interface EventoRepository extends JpaRepository<EventoEntity, Long> {
-//
-//@Query(value = """
-//
-//        SELECT\s
-//  e.id, e.activo, e.descripcion, e.evento, e.fecha, e.hora,
-//  STRING_AGG(DISTINCT a.nombre, ', ')     AS artistas,
-//  STRING_AGG(DISTINCT te.entrada, ', ')   AS entradas,
-//  c.clasificacion, e2.establecimiento, e2.direccion, c2.ciudad, p.provincia
-//FROM eventos e
-//LEFT JOIN artista_evento ae       ON ae.id_evento = e.id
-//LEFT JOIN artistas a              ON a.id = ae.id_artista
-//LEFT JOIN evento_entrada ee       ON ee.id_evento = e.id
-//LEFT JOIN tipos_entrada te        ON te.id = ee.id_tipos_entrada
-//JOIN clasificaciones c            ON c.id = e.id_clasificacion
-//JOIN establecimientos e2          ON e2.id = e.id_establecimiento
-//JOIN barrios b                    ON b.id = e2.id_barrio
-//JOIN ciudades c2                  ON c2.id = b.id_ciudad
-//JOIN provincias p                 ON p.id = c2.id_provincia
-//GROUP BY\s
-//  e.id, e.activo, e.descripcion, e.evento, e.fecha, e.hora,
-//  c.clasificacion, e2.establecimiento, e2.direccion, c2.ciudad, p.provincia;
-//""", nativeQuery = true)
-//    List<GetEventoDto> findAllEventos();
-//
-//@Query(value = """
-//
-//        SELECT\s
-//  e.id, e.activo, e.descripcion, e.evento, e.fecha, e.hora,
-//  STRING_AGG(DISTINCT a.nombre, ', ')     AS artistas,
-//  STRING_AGG(DISTINCT te.entrada, ', ')   AS entradas,
-//  c.clasificacion, e2.establecimiento, e2.direccion, c2.ciudad, p.provincia
-//FROM eventos e
-//LEFT JOIN artista_evento ae       ON ae.id_evento = e.id
-//LEFT JOIN artistas a              ON a.id = ae.id_artista
-//LEFT JOIN evento_entrada ee       ON ee.id_evento = e.id
-//LEFT JOIN tipos_entrada te        ON te.id = ee.id_tipos_entrada
-//JOIN clasificaciones c            ON c.id = e.id_clasificacion
-//JOIN establecimientos e2          ON e2.id = e.id_establecimiento
-//JOIN barrios b                    ON b.id = e2.id_barrio
-//JOIN ciudades c2                  ON c2.id = b.id_ciudad
-//JOIN provincias p                 ON p.id = c2.id_provincia
-//where e.id = :id
-//GROUP BY\s
-//  e.id, e.activo, e.descripcion, e.evento, e.fecha, e.hora,
-//  c.clasificacion, e2.establecimiento, e2.direccion, c2.ciudad, p.provincia;
-//
-//""", nativeQuery = true)
-//    GetEventoDto findEventoById(@Param("id")  Long id);
-//
-//}
 public interface EventoRepository extends ListCrudRepository<EventoEntity, Long> {
-
-//    @EntityGraph(attributePaths = {
-//            "clasificacion",
-//            "establecimiento",
-//            "productor",
-//            "imagenDatos",
-//            "establecimiento.barrio",
-//            "establecimiento.barrio.ciudad",
-//            "establecimiento.barrio.ciudad.provincia",
-//            "artistasEvento.artista",
-//            "eventoTiposEntrada.tiposEntrada",
-//            "eventoTiposEntrada.precio",
-//            "eventoTiposEntrada.disponibilidad"
-//    })
-//    @Query("select e from EventoEntity e")
 @EntityGraph(attributePaths = {
   "clasificacion",
   "establecimiento",
   "productor",
   "imagenDatos",
+  "establecimiento.id",
+  "establecimiento.capacidad",
   "establecimiento.barrio",
   "establecimiento.barrio.ciudad",
   "establecimiento.barrio.ciudad.provincia",
   "artistasEvento.artista",
   "eventoTiposEntrada.tiposEntrada"
 })
-@Query("select distinct e from EventoEntity e")
+@Query("select distinct e from EventoEntity e where e.activo = true order by e.fecha desc")
 @QueryHints(@QueryHint(name = "org.hibernate.jpa.HibernateHints.HINT_PASS_DISTINCT_THROUGH", value = "false"))
     List<EventoEntity> findAllForDto();
 
@@ -100,6 +36,8 @@ public interface EventoRepository extends ListCrudRepository<EventoEntity, Long>
             "establecimiento",
             "productor",
             "imagenDatos",
+            "establecimiento.id",
+            "establecimiento.capacidad",
             "establecimiento.barrio",
             "establecimiento.barrio.ciudad",
             "establecimiento.barrio.ciudad.provincia",
@@ -108,6 +46,27 @@ public interface EventoRepository extends ListCrudRepository<EventoEntity, Long>
             "eventoTiposEntrada.precio",
             "eventoTiposEntrada.disponibilidad"
     })
-    @Query("select e from EventoEntity e where e.id = :id")
+    @Query("select e from EventoEntity e where e.activo and e.id = :id")
     Optional<EventoEntity> findByIdForDto(@Param("id") Long id);
+
+  @EntityGraph(attributePaths = {
+    "clasificacion",
+    "establecimiento",
+    "productor",
+    "imagenDatos",
+    "establecimiento.capacidad",
+    "establecimiento.barrio",
+    "establecimiento.barrio.ciudad",
+    "establecimiento.barrio.ciudad.provincia",
+    "artistasEvento.artista",
+    "eventoTiposEntrada.tiposEntrada"
+  })
+  @Query("""
+    select distinct e
+    from EventoEntity e
+    where e.activo = true
+      and e.establecimiento.id = :establecimientoId
+      order by e.fecha desc
+""")
+  List<EventoEntity> findActivosByEstablecimientoId(@Param("establecimientoId") Long establecimientoId);
 }

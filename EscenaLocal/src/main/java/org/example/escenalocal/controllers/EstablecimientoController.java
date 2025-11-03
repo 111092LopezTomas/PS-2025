@@ -2,6 +2,7 @@ package org.example.escenalocal.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.example.escenalocal.dtos.get.GetEstablecimientoDto;
+import org.example.escenalocal.dtos.get.GetEventoDto;
 import org.example.escenalocal.services.EstablecimientoService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

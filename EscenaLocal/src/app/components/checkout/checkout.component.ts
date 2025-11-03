@@ -3,6 +3,7 @@ import { environment } from '../../environments/environment';
 import { PaymentService } from '../../services/payment.service';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 declare const MercadoPago: any; // SDK global
 
@@ -10,7 +11,7 @@ declare const MercadoPago: any; // SDK global
   selector: 'app-checkout',
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.css'],
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
 })
 export class CheckoutComponent implements AfterViewInit {
   loading = false;
@@ -19,6 +20,8 @@ export class CheckoutComponent implements AfterViewInit {
   initPoint?: string;
   eventId = 0;
   precio?: number;
+  cantidad: number = 1;
+  total: number = 0;
 
   constructor(private payments: PaymentService, private route: ActivatedRoute) {}
 
@@ -28,6 +31,8 @@ export class CheckoutComponent implements AfterViewInit {
 
     const p = Number(this.route.snapshot.queryParamMap.get('precio'));
     this.precio = Number.isFinite(p) && p > 0 ? p : undefined;
+
+    this.calcularTotal();
 }
 
   ngAfterViewInit(): void {}
@@ -38,7 +43,7 @@ async comprar() {
     this.loading = true;
 
     const res = await this.payments
-      .createPreferenceForEvent(this.eventId, 1, this.precio)
+      .createPreferenceForEvent(this.eventId, this.cantidad, this.precio)
       .toPromise();
 
     if (!res) throw new Error('Sin respuesta');
@@ -63,5 +68,16 @@ async comprar() {
     if (this.initPoint) {
       window.location.href = this.initPoint;
     }
+  }
+
+  calcularTotal(): number {
+    return this.total = this.cantidad * this.precio!;
+  }
+
+  onCantidadChange() {
+    if (!Number.isFinite(this.cantidad) || this.cantidad < 1) {
+      this.cantidad = 1;
+    }
+    this.calcularTotal();
   }
 }

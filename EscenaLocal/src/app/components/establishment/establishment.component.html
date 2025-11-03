@@ -1,0 +1,138 @@
+<!-- Estado de Carga -->
+<div *ngIf="loading" class="container my-5">
+  <div class="text-center py-5">
+    <div
+      class="spinner-border text-primary"
+      role="status"
+      style="width: 3rem; height: 3rem"
+    >
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p class="mt-3 text-muted">Cargando establecimiento...</p>
+  </div>
+</div>
+
+<!-- Estado de Error -->
+<div *ngIf="error && !loading" class="container my-5">
+  <div class="alert alert-danger d-flex align-items-center" role="alert">
+    <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+
+    <div class="flex-grow-1">
+      <h5 class="alert-heading mb-1">Error al cargar el establecimiento</h5>
+      <p class="mb-0 small">{{ error }}</p>
+    </div>
+
+    <button class="btn btn-outline-danger ms-3" (click)="cargar()">
+      <i class="bi bi-arrow-clockwise me-2"></i>Reintentar
+    </button>
+  </div>
+</div>
+
+<!-- Contenido del Establecimiento -->
+<div *ngIf="establecimiento && !loading" class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <div class="card shadow-lg rounded-4 border-0 establecimiento-card">
+
+        <!-- Header -->
+        <div
+          class="card-header bg-dark text-white d-flex justify-content-between align-items-start rounded-top-4"
+        >
+          <div>
+            <span class="badge bg-primary text-uppercase small mb-2">
+              Establecimiento
+            </span>
+
+            <h2 class="card-title h3 fw-bold mb-1">
+              {{ establecimiento.nombre }}
+            </h2>
+
+            <p class="mb-0 text-white-50 small">
+              {{ establecimiento.direccion }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-outline-light btn-sm rounded-pill ms-3"
+            (click)="volver()"
+          >
+            <i class="bi bi-arrow-left me-1"></i>
+            Volver
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body bg-light rounded-bottom-4">
+          <div class="row g-3">
+
+            <!-- Dirección completa -->
+            <div class="col-12">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-geo-alt fs-4 text-primary me-3"></i>
+                <div>
+                  <small class="text-muted d-block">Dirección</small>
+                  <strong>{{ establecimiento.direccion }}</strong>
+                  <p class="mb-0 text-muted small">
+                    {{ establecimiento.barrio }},
+                    {{ establecimiento.ciudad }},
+                    {{ establecimiento.provincia }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Barrio -->
+            <div class="col-md-4">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-houses fs-4 text-primary me-2"></i>
+                <div>
+                  <small class="text-muted d-block">Barrio</small>
+                  <strong>{{ establecimiento.barrio }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ciudad -->
+            <div class="col-md-4">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-building fs-4 text-primary me-2"></i>
+                <div>
+                  <small class="text-muted d-block">Ciudad</small>
+                  <strong>{{ establecimiento.ciudad }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Provincia -->
+            <div class="col-md-4">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-geo-fill fs-4 text-primary me-2"></i>
+                <div>
+                  <small class="text-muted d-block">Provincia</small>
+                  <strong>{{ establecimiento.provincia }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Placeholder de mapa -->
+          <div class="mt-4">
+            <div
+              class="map-placeholder w-100 rounded-3"
+              style="height: 250px;"
+            >
+              <div class="text-center text-muted small py-5">
+                <i class="bi bi-map fs-2 d-block mb-2"></i>
+                <span>Mapa del lugar (próximamente)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

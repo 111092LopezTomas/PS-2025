@@ -5,6 +5,7 @@ import org.example.escenalocal.dtos.post.PostEventoDto;
 import org.example.escenalocal.dtos.put.PutEventoDto;
 import org.example.escenalocal.entities.EventoEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -23,4 +24,6 @@ public interface EventoService {
   EventoEntity obtenerEvento(Long id);
 
   void eliminarImagen(Long id);
+
+  List<GetEventoDto> getEventosByEstablecimientoId(@PathVariable Long id);
 }

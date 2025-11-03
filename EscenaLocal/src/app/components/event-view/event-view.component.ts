@@ -40,6 +40,7 @@ export class EventViewComponent {
 
   disponibilidad: number = 0;
   precio: number = 0;
+  entrada!: EntradaDto;
 
   constructor(
     private eventService: EventService,
@@ -162,4 +163,13 @@ export class EventViewComponent {
   getCapacidadInicial(entrada: EntradaDto): number {
     return entrada.disponibilidad * 1.5; // Estimación para la barra de progreso
   }
+
+  verEstablecimiento(id: number):void {
+    this.router.navigate(['/establecimientos', id]);
+  }
+
+  volver() {
+    this.router.navigate(['/eventos']);
+  }
+
 }

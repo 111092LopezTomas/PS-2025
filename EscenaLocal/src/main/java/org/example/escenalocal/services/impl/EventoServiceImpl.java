@@ -75,8 +75,11 @@ public class EventoServiceImpl implements EventoService {
         entradasDetalle,
         e.getClasificacion().getClasificacion(),
         e.getProductor().getNombre(),
+        est.getId(),
         est.getEstablecimiento(),
+        est.getCapacidad(),
         est.getDireccion(),
+        est.getBarrio().getBarrio(),
         ciudad.getCiudad(),
         provincia.getProvincia()
       );
@@ -125,8 +128,11 @@ public class EventoServiceImpl implements EventoService {
       entradasDetalle,
       e.getClasificacion().getClasificacion(),
       e.getProductor().getNombre(),
+      est.getId(),
       est.getEstablecimiento(),
+      est.getCapacidad(),
       est.getDireccion(),
+      est.getBarrio().getBarrio(),
       ciudad.getCiudad(),
       provincia.getProvincia()
     );
@@ -240,11 +246,186 @@ public class EventoServiceImpl implements EventoService {
 
 
   @Override
-    public GetEventoDto updateEvento(Long id, PutEventoDto putEventoDto) {
-        return null;
+  @Transactional
+  public GetEventoDto updateEvento(Long id, PutEventoDto dto) {
+    // 1) Traer evento con sus colecciones (lazy ok dentro de @Transactional)
+    var ev = eventoRepository.findById(id)
+      .orElseThrow(() -> new EntityNotFoundException("Evento no encontrado: " + id));
+
+    // 2) Campos simples (solo si el dto trae valor)
+    if (dto.getEvento() != null) {
+      ev.setEvento(dto.getEvento());
+    }
+    if (dto.getDescripcion() != null) {
+      ev.setDescripcion(dto.getDescripcion());
+    }
+    if (dto.getActivo() != null) {
+      ev.setActivo(Boolean.TRUE.equals(dto.getActivo()));
     }
 
-    @Override
+    // fecha: null -> no tocar; "" -> limpiar; "yyyy-MM-dd" -> setear
+    if (dto.getFecha() != null) {
+      if (dto.getFecha().isBlank()) {
+        ev.setFecha(null);
+      } else {
+        ev.setFecha(LocalDate.parse(dto.getFecha()));
+      }
+    }
+
+    // hora: null -> no tocar; "" -> limpiar; "HH:mm[:ss]" -> setear
+    if (dto.getHora() != null) {
+      if (dto.getHora().isBlank()) {
+        ev.setHora(null);
+      } else {
+        ev.setHora(LocalTime.parse(dto.getHora()));
+      }
+    }
+
+    // 3) Relaciones "single-valued" si vienen en el DTO
+    if (dto.getEstablecimientoId() != null) {
+      var est = establecimientoRepository.findById(dto.getEstablecimientoId())
+        .orElseThrow(() -> new EntityNotFoundException("Establecimiento no encontrado: " + dto.getEstablecimientoId()));
+      ev.setEstablecimiento(est);
+    }
+
+    if (dto.getClasificacionId() != null) {
+      var clas = clasificacionRepository.findById(dto.getClasificacionId())
+        .orElseThrow(() -> new EntityNotFoundException("Clasificación no encontrada: " + dto.getClasificacionId()));
+      ev.setClasificacion(clas);
+    }
+
+    if (dto.getProductorId() != null) {
+      var prod = productorRepository.findById(dto.getProductorId())
+        .orElseThrow(() -> new EntityNotFoundException("Productor no encontrado: " + dto.getProductorId()));
+      ev.setProductor(prod);
+    }
+
+    // 4) Relaciones "collection-valued" (reconciliar si vienen en el DTO)
+    if (dto.getArtistaId() != null) {
+      reconciliarArtistas(ev, new HashSet<>(dto.getArtistaId()));
+    }
+
+    if (dto.getEntradasDetalle() != null) {
+      reconciliarEntradas(ev, new HashSet<>(dto.getEntradasDetalle()));
+    }
+
+    // 5) Persistir y devolver DTO consistente
+    var saved = eventoRepository.save(ev);
+    return toDto(saved); // usa tu método que arma GetEventoDto completo
+  }
+
+  /**
+   * Reemplaza los artistas del evento por exactamente los que se pasen en artistaIds.
+   * Elimina los que sobran y crea los que faltan.
+   */
+  private void reconciliarArtistas(EventoEntity ev, Set<Long> artistaIds) {
+    // IDs actuales en el evento
+    var actuales = ev.getArtistasEvento().stream()
+      .map(ae -> ae.getArtista().getId())
+      .collect(Collectors.toSet());
+
+    // --- Eliminar los que ya no vienen ---
+    var iterator = ev.getArtistasEvento().iterator();
+    while (iterator.hasNext()) {
+      var join = iterator.next();
+      Long aid = join.getArtista().getId();
+      if (!artistaIds.contains(aid)) {
+        // quitar de ambos lados
+        join.getArtista().getArtistaEventos().remove(join);
+        iterator.remove();
+      }
+    }
+
+    // --- Agregar los nuevos que faltan ---
+    var nuevosIds = artistaIds.stream()
+      .filter(id -> !actuales.contains(id))
+      .collect(Collectors.toSet());
+
+    if (!nuevosIds.isEmpty()) {
+      var nuevosArtistas = new HashSet<>(artistaRepository.findAllById(nuevosIds));
+      var encontrados = nuevosArtistas.stream().map(ArtistaEntity::getId).collect(Collectors.toSet());
+      var faltantes = nuevosIds.stream().filter(id -> !encontrados.contains(id)).toList();
+      if (!faltantes.isEmpty()) {
+        throw new EntityNotFoundException("Artistas no encontrados: " + faltantes);
+      }
+
+      for (var artista : nuevosArtistas) {
+        var join = new ArtistaEventoEntity();
+        join.setEvento(ev);
+        join.setArtista(artista);
+        join.setId(new ArtistaEventoId(ev.getId(), artista.getId())); // si ev.getId() es null, JPA lo completará al persistir
+        ev.getArtistasEvento().add(join);
+        artista.getArtistaEventos().add(join);
+      }
+    }
+  }
+
+  /**
+   * Reemplaza los tipos de entrada del evento por exactamente los que lleguen en 'detalles'.
+   * Hace upsert de precio/disponibilidad y elimina los tipos que ya no estén.
+   */
+  private void reconciliarEntradas(EventoEntity ev, Set<PostEntradaDetalleDto> detalles) {
+    // Map de tipoId -> detalle entrante
+    Map<Long, PostEntradaDetalleDto> entrantes = detalles.stream()
+      .filter(d -> d.getTipo() != null)
+      .collect(Collectors.toMap(PostEntradaDetalleDto::getTipo, d -> d, (a, b) -> b));
+
+    // Validar tipos existentes en DB
+    var idsTipos = entrantes.keySet();
+    var tiposExistentes = new HashMap<Long, TiposEntradaEntity>();
+    tiposEntradaRepository.findAllById(idsTipos).forEach(t -> tiposExistentes.put(t.getId(), t));
+
+    var faltantes = idsTipos.stream().filter(id -> !tiposExistentes.containsKey(id)).toList();
+    if (!faltantes.isEmpty()) {
+      throw new EntityNotFoundException("Tipos de entrada no encontrados: " + faltantes);
+    }
+
+    // Map de tipoId -> join actual
+    Map<Long, EventoTiposEntradaEntity> actuales = ev.getEventoTiposEntrada().stream()
+      .collect(Collectors.toMap(eje -> eje.getTiposEntrada().getId(), eje -> eje));
+
+    // --- Eliminar los que ya no vienen ---
+    var it = ev.getEventoTiposEntrada().iterator();
+    while (it.hasNext()) {
+      var join = it.next();
+      Long tipoId = join.getTiposEntrada().getId();
+      if (!entrantes.containsKey(tipoId)) {
+        // quitar de ambos lados
+        join.getTiposEntrada().getEventoTipos().remove(join);
+        it.remove();
+        // Si manejás repositorio para join y no hay orphanRemoval, podrías hacer:
+        // eventoTiposEntradaRepository.delete(join);
+      }
+    }
+
+    // --- Upsert de los que vienen ---
+    for (var entry : entrantes.entrySet()) {
+      Long tipoId = entry.getKey();
+      var det = entry.getValue();
+
+      if (actuales.containsKey(tipoId)) {
+        // update
+        var join = actuales.get(tipoId);
+        join.setPrecio(det.getPrecio());
+        join.setDisponibilidad(det.getDisponibilidad());
+      } else {
+        // insert
+        var tipo = tiposExistentes.get(tipoId);
+        var join = new EventoTiposEntradaEntity();
+        join.setEvento(ev);
+        join.setTiposEntrada(tipo);
+        join.setId(new EventoTiposEntradaId(ev.getId(), tipo.getId()));
+        join.setPrecio(det.getPrecio());
+        join.setDisponibilidad(det.getDisponibilidad());
+
+        ev.getEventoTiposEntrada().add(join);
+        tipo.getEventoTipos().add(join);
+      }
+    }
+  }
+
+
+  @Override
     public void deleteEvento(Long id) {
 
     }
@@ -282,4 +463,14 @@ public class EventoServiceImpl implements EventoService {
     ev.setImagenTamano(null);
     eventoRepository.save(ev);
   }
+
+  @Override
+  @Transactional
+  public List<GetEventoDto> getEventosByEstablecimientoId(Long id) {
+
+      var eventos = eventoRepository.findActivosByEstablecimientoId(id);
+      return eventos.stream()
+        .map(this::toDto)
+        .toList();
+    }
 }

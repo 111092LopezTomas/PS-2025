@@ -22,11 +22,13 @@ public class GetEventoDto {
   LocalTime hora;
   List<String> artistas;
   List<GetEntradaDto> entradasDetalle;
-  //List<String> entradas;
   String clasificacion;
   String productor;
+  Long establecimientoId;
   String establecimiento;
+  Integer capacidad;
   String direccion;
+  String barrio;
   String ciudad;
   String provincia;
 

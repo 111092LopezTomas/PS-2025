@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { EventService } from '../../services/event.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-event-form',
@@ -22,17 +24,17 @@ export class EventFormComponent {
   selectedFile: File | null = null;
   imagePreview: string | null = null;
 
-  // ========== PROPIEDADES PARA MÚLTIPLES ARTISTAS Y ENTRADAS ==========
   artistasSeleccionados: number[] = [];
   artistaSeleccionado: string = '';
-  tiposEntradaSeleccionados: any[] = []; // Array de objetos {tipoEntradaId, nombre, precio, disponibilidad}
+  tiposEntradaSeleccionados: any[] = [];
   tipoEntradaSeleccionado: string = '';
   precioEntrada: number | null = null;
   disponibilidadEntrada: number | null = null;
 
   constructor(
     private fb: FormBuilder,
-    private eventService: EventService
+    private eventService: EventService,
+    private router: Router
   ) {
     this.eventForm = this.fb.group({
       nombreEvento: ['', [Validators.required, Validators.minLength(3)]],
@@ -65,6 +67,12 @@ export class EventFormComponent {
       error: (error) => {
         console.error('Error al cargar artistas:', error);
         this.isLoading = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los artistas',
+          confirmButtonText: 'Entendido'
+        });
       }
     });
   }
@@ -76,6 +84,11 @@ export class EventFormComponent {
       },
       error: (error) => {
         console.error('Error al cargar productores:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los productores'
+        });
       }
     });
   }
@@ -87,6 +100,11 @@ export class EventFormComponent {
       },
       error: (error) => {
         console.error('Error al cargar tipos de entrada:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los tipos de entrada'
+        });
       }
     });
   }
@@ -99,6 +117,11 @@ export class EventFormComponent {
       },
       error: (error) => {
         console.error('Error al cargar establecimientos:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los establecimientos'
+        });
       }
     });
   }
@@ -110,11 +133,14 @@ export class EventFormComponent {
       },
       error: (error) => {
         console.error('Error al cargar clasificaciones:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar las clasificaciones'
+        });
       }
     });
   }
-
-  // ========== MÉTODOS PARA ARTISTAS MÚLTIPLES ==========
   
   agregarArtista(): void {
     if (!this.artistaSeleccionado) return;
@@ -139,11 +165,15 @@ export class EventFormComponent {
       !this.artistasSeleccionados.includes(artista.id)
     );
   }
-
-  // ========== MÉTODOS PARA TIPOS DE ENTRADA MÚLTIPLES ==========
   
   agregarTipoEntrada(): void {
     if (!this.tipoEntradaSeleccionado || !this.precioEntrada || !this.disponibilidadEntrada) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos incompletos',
+        text: 'Debes completar el tipo de entrada, precio y disponibilidad',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 
@@ -151,7 +181,12 @@ export class EventFormComponent {
     
     // Verificar que no esté ya agregado
     if (this.tiposEntradaSeleccionados.some(e => e.tipoEntradaId === tipoId)) {
-      alert('Este tipo de entrada ya fue agregado');
+      Swal.fire({
+        icon: 'info',
+        title: 'Entrada duplicada',
+        text: 'Este tipo de entrada ya fue agregado',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 
@@ -189,7 +224,12 @@ export class EventFormComponent {
     );
   }
 
-  // ========== MÉTODOS ORIGINALES ==========
+  // 👇 NUEVO MÉTODO PARA CALCULAR TOTAL DE TICKETS
+  calcularTotalTickets(): number {
+    return this.tiposEntradaSeleccionados.reduce((total, entrada) => {
+      return total + (entrada.disponibilidad || 0);
+    }, 0);
+  }
 
   get f() {
     return this.eventForm.controls;
@@ -198,6 +238,18 @@ export class EventFormComponent {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
+      // Validar tamaño (máx 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Archivo muy grande',
+          text: 'La imagen no debe superar los 5MB',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
+
       this.selectedFile = file;
       this.eventForm.patchValue({ imagen: file.name });
       this.eventForm.get('imagen')?.updateValueAndValidity();
@@ -222,20 +274,97 @@ export class EventFormComponent {
 
     // Validar que haya al menos un artista
     if (this.artistasSeleccionados.length === 0) {
-      alert('Debe agregar al menos un artista');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Artistas requeridos',
+        text: 'Debe agregar al menos un artista al evento',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 
     // Validar que haya al menos un tipo de entrada
     if (this.tiposEntradaSeleccionados.length === 0) {
-      alert('Debe agregar al menos un tipo de entrada');
+      Swal.fire({
+        icon: 'warning',
+        title: 'Entradas requeridas',
+        text: 'Debe agregar al menos un tipo de entrada',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
 
     if (this.eventForm.invalid) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Formulario incompleto',
+        text: 'Por favor, completa todos los campos requeridos',
+        confirmButtonText: 'Entendido'
+      });
       return;
     }
-    
+
+    // 👇 CONFIRMACIÓN CON SWEETALERT
+    const nombreEvento = this.eventForm.get('nombreEvento')?.value;
+    const fecha = this.eventForm.get('fecha')?.value;
+    const hora = this.eventForm.get('hora')?.value;
+    const establecimiento = this.establecimientos.find(e => e.id == this.eventForm.get('establecimientoId')?.value);
+    const totalTickets = this.calcularTotalTickets();
+
+    Swal.fire({
+      title: '¿Crear nuevo evento?',
+      html: `
+        <div style="text-align: left; padding: 10px;">
+          <p><strong>Evento:</strong> ${nombreEvento}</p>
+          <p><strong>Lugar:</strong> ${establecimiento?.establecimiento || 'N/A'}</p>
+          <p><strong>Fecha:</strong> ${this.formatearFecha(fecha)}</p>
+          <p><strong>Hora:</strong> ${hora}</p>
+          <p><strong>Artistas:</strong> ${this.artistasSeleccionados.length}</p>
+          <p><strong>Tipos de entrada:</strong> ${this.tiposEntradaSeleccionados.length}</p>
+          <p><strong>Total de tickets:</strong> ${totalTickets}</p>
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: '✅ Sí, crear evento',
+      cancelButtonText: '❌ Cancelar',
+      reverseButtons: true,
+      customClass: {
+        popup: 'swal-wide'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.crearEvento();
+        this.volver();
+      }
+    });
+  }
+
+  private formatearFecha(fecha: string): string {
+    if (!fecha) return 'N/A';
+    const fechaObj = new Date(fecha + 'T00:00:00');
+    return fechaObj.toLocaleDateString('es-AR', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+
+  private crearEvento(): void {
+    // Mostrar loading
+    Swal.fire({
+      title: 'Creando evento...',
+      html: 'Por favor espera un momento',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     const formData = new FormData();
     
     // Mapear las entradas al formato requerido por el backend
@@ -251,7 +380,7 @@ export class EventFormComponent {
       descripcion: this.eventForm.get('descripcion')?.value,
       artistaId: this.artistasSeleccionados,
       productorId: this.eventForm.get('productorId')?.value,
-      entradasDetalle: entradasDetalle, // Array de objetos con precio y disponibilidad
+      entradasDetalle: entradasDetalle,
       establecimientoId: this.eventForm.get('establecimientoId')?.value,
       clasificacionId: this.eventForm.get('clasificacionId')?.value,
       fecha: this.eventForm.get('fecha')?.value,
@@ -272,19 +401,41 @@ export class EventFormComponent {
     this.eventService.crearEvento(formData).subscribe({
       next: (response) => {
         console.log('Evento creado exitosamente:', response);
-        alert('Evento creado exitosamente');
-        this.resetForm();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Evento creado!',
+          html: `
+            <p>El evento <strong>${dto.evento}</strong> ha sido creado exitosamente.</p>
+            <p class="text-muted small">Ya está disponible en el sistema.</p>
+          `,
+          confirmButtonText: 'Aceptar',
+          timer: 3000,
+          timerProgressBar: true
+        }).then(() => {
+          this.resetForm();
+        });
       },
       error: (error) => {
         console.error('Error al crear evento:', error);
-        alert('Error al crear el evento');
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al crear evento',
+          html: `
+            <p>${error.error?.message || 'Ocurrió un error al intentar crear el evento'}</p>
+            <p class="text-muted small">Por favor, verifica los datos e intenta nuevamente.</p>
+          `,
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#d33'
+        });
       }
     });
   }
 
   resetForm(): void {
     this.submitted = false;
-    this.eventForm.reset();
+    this.eventForm.reset({
+      activo: true
+    });
     this.selectedFile = null;
     this.imagePreview = null;
     this.artistasSeleccionados = [];
@@ -293,5 +444,9 @@ export class EventFormComponent {
     this.tipoEntradaSeleccionado = '';
     this.precioEntrada = null;
     this.disponibilidadEntrada = null;
+  }
+
+  volver() {
+    this.router.navigate(['/eventos']);
   }
 }

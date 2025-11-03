@@ -1,15 +1,49 @@
-  <div class="container my-5">
-    <h2 class="mb-4">Eventos Destacados</h2>
-    <div class="row" >
-    
-      <div class="col-sm-6 col-md-3"  *ngFor="let e of events">
-        <div class="evento-container">
-          <img [src]="apiBase + '/eventos/' + e.id + '/imagen'">
-          <h4 class="nombre-artista">{{e.evento}}</h4>
-          <div class="fecha-lugar">
-            <p>{{e.fecha | date:'dd/MM' }}, {{ ('1970-01-01T' + e.hora) | date:'HH:mm' }} hs</p>
-            <p>{{e.establecimiento}}, {{e.ciudad}}</p>
-          </div>
-          <button class="btn btn-success btn-comprar" (click)="VerEvento(e.id)">Comprar Entrada</button>
+<div class="container my-5">
+  <h2 class="mb-4">Eventos Destacados</h2>
+  
+  <!-- Lista de eventos -->
+  <div class="row">
+    <div class="col-sm-6 col-md-3" *ngFor="let e of events">
+      <div class="evento-container">
+        <img [src]="apiBase + '/eventos/' + e.id + '/imagen'" [alt]="e.evento">
+        <h4 class="nombre-artista">{{e.evento}}</h4>
+        <div class="fecha-lugar">
+          <p>{{e.fecha | date:'dd/MM' }}, {{ ('1970-01-01T' + e.hora) | date:'HH:mm' }} hs</p>
+          <p>{{e.establecimiento}}, {{e.ciudad}}</p>
         </div>
+        <button class="btn btn-success btn-comprar" (click)="VerEvento(e.id)">
+          Comprar Entrada
+        </button>
       </div>
+    </div>
+
+    <!-- Mensaje cuando NO hay resultados -->
+    <div *ngIf="events.length === 0 && hayFiltrosActivos" class="col-12">
+      <div class="alert alert-warning text-center py-5 my-5" role="alert">
+        <i class="bi bi-search fs-1 d-block mb-3 text-warning"></i>
+        <h4 class="alert-heading">No se encontraron eventos</h4>
+        <p class="mb-3">
+          No hay eventos que coincidan con tu búsqueda
+          <strong *ngIf="filtroActual.busqueda">"{{ filtroActual.busqueda }}"</strong>
+          <span *ngIf="filtroActual.busqueda && filtroActual.provincia"> en </span>
+          <strong *ngIf="filtroActual.provincia">{{ filtroActual.provincia }}</strong>
+        </p>
+        <hr>
+        <button class="btn btn-primary" (click)="limpiarFiltros()">
+          <i class="bi bi-x-circle me-2"></i>
+          Limpiar filtros y ver todos los eventos
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje cuando NO hay eventos cargados del backend -->
+    <div *ngIf="events.length === 0 && !hayFiltrosActivos && todosLosEventos.length === 0" class="col-12">
+      <div class="alert alert-info text-center py-5 my-5" role="alert">
+        <div class="spinner-border text-primary mb-3" role="status">
+          <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p class="mb-0">Cargando eventos...</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { EventService, EventGet } from '../../services/event.service';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { EventService, EventGet, FiltrosEvento } from '../../services/event.service';
+import { Subject, takeUntil } from 'rxjs';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
@@ -8,48 +9,100 @@ import { Router, RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, DatePipe, RouterModule],
   templateUrl: './event-list.component.html',
-  styleUrls: ['./event-list.component.css'],
+  styleUrls: ['./event-list.component.css']
 })
-export class EventListComponent implements OnInit {
+export class EventListComponent implements OnInit, OnDestroy {
   events: EventGet[] = [];
-  imagenUrl: string = '';
+  todosLosEventos: EventGet[] = [];
   apiBase = 'http://localhost:8080';
+  
+  // NUEVO: Variables para controlar el mensaje
+  hayFiltrosActivos = false;
+  filtroActual: FiltrosEvento = { busqueda: '', provincia: '' };
+  
+  private destroy$ = new Subject<void>();
 
-  mostrarFila1 = false;
-
-  constructor(private eventService: EventService, private router: Router) {}
+  constructor(
+    private eventService: EventService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.cargarEventos();
+
+    this.eventService.filtros$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(filtros => {
+        // Guardar filtros actuales
+        this.filtroActual = filtros;
+        
+        // Determinar si hay filtros activos
+        this.hayFiltrosActivos = !!(filtros.busqueda || filtros.provincia);
+        
+        if (this.todosLosEventos.length > 0) {
+          this.filtrarEventos(filtros.busqueda, filtros.provincia);
+        }
+      });
   }
 
-  
-
-  cargarEventos() {
-    this.eventService.getEvents().subscribe((data) => {
-      this.events = data;
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
-  cargarFlyer(id: number) {
-    this.eventService.getImagenEvento(id).subscribe({
-      next: (blob) => {
-        this.imagenUrl = URL.createObjectURL(blob);
+
+  cargarEventos(): void {
+    this.eventService.getEvents().subscribe({
+      next: (data) => {
+        this.todosLosEventos = data;
+        this.events = data;
+        
+        const filtrosActuales = this.eventService.getFiltrosActuales?.() || { busqueda: '', provincia: '' };
+        if (filtrosActuales.busqueda || filtrosActuales.provincia) {
+          this.filtrarEventos(filtrosActuales.busqueda, filtrosActuales.provincia);
+        }
       },
       error: (err) => {
-        console.error('No se pudo cargar la imagen' + id, err);
-      },
+        console.error('Error al cargar eventos:', err);
+        this.todosLosEventos = [];
+        this.events = [];
+      }
     });
   }
 
-  toggleFila1() {
-    this.mostrarFila1 = !this.mostrarFila1;
+  private filtrarEventos(busqueda: string, provincia: string): void {
+    if (!this.todosLosEventos || this.todosLosEventos.length === 0) {
+      this.events = [];
+      return;
+    }
+
+    let resultado = [...this.todosLosEventos];
+
+    if (provincia) {
+      resultado = resultado.filter(e => String(e.provincia) === provincia);
+    }
+
+    if (busqueda) {
+      const b = busqueda.toLowerCase();
+      resultado = resultado.filter(e => {
+        const artistas = Array.isArray(e.artistas)
+          ? e.artistas.join(' ')
+          : String(e.artistas || '');
+
+        return artistas.toLowerCase().includes(b) ||
+               String(e.evento || '').toLowerCase().includes(b) ||
+               String(e.establecimiento || '').toLowerCase().includes(b) ||
+               String(e.ciudad || '').toLowerCase().includes(b);
+      });
+    }
+
+    this.events = resultado;
   }
 
-  VerEvento(id: number) {
-    console.log('Navegando a evento ID:', id); // Debug
-    this.router
-      .navigate(['/evento', id])
-      .then(() => console.log('Navegación exitosa'))
-      .catch((err) => console.error('Error en navegación:', err));
+  limpiarFiltros(): void {
+    this.eventService.actualizarFiltros({ busqueda: '', provincia: '' });
+  }
+
+  VerEvento(id: number): void {
+    this.router.navigate(['/evento', id]);
   }
 }
