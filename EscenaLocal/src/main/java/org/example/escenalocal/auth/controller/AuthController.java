@@ -1,7 +1,6 @@
 package org.example.escenalocal.auth.controller;
 
 import org.example.escenalocal.auth.dtos.*;
-import org.example.escenalocal.auth.repository.RolRepository;
 import org.example.escenalocal.auth.repository.UserRepository;
 import org.example.escenalocal.auth.service.AuthService;
 import org.example.escenalocal.entities.UsuarioEntity;
@@ -10,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -74,5 +73,16 @@ public class AuthController {
     List<GetRolDto> list = authService.getRoles();
     return ResponseEntity.ok(list);
 
+  }
+
+  @GetMapping("/usuarios/{id}")
+  public ResponseEntity<Optional<UsuarioEntity>> obtenerUsuario(@PathVariable Long id) {
+    Optional<UsuarioEntity> usuario = userRepo.findById(id);
+
+    if (usuario == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    return ResponseEntity.ok(usuario);
   }
 }

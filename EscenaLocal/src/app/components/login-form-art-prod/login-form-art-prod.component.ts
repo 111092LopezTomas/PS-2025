@@ -85,7 +85,7 @@ export class LoginFormArtProdComponent implements OnInit {
   }
 
   irAlLogin() {    
-    this.router.navigate(['/login']);
+    this.router.navigate(['/login/art-prod']);
   }
 
 }

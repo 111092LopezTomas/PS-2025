@@ -12,6 +12,7 @@ import { EstablishmentComponent } from './components/establishment/establishment
 import { LoginArtProdComponent } from './components/login-art-prod/login-art-prod.component';
 import { RoleGuard } from './role.guard';
 import { LoginFormArtProdComponent } from './components/login-form-art-prod/login-form-art-prod.component';
+import { UserProfileComponent } from './components/user-profile/user-profile.component';
 
 export const routes: Routes = [
   
@@ -31,6 +32,7 @@ export const routes: Routes = [
   { path: 'login/nuevo', component: LoginFormComponent },
   { path: 'login/art-prod', component: LoginArtProdComponent },
   { path: 'login/art-prod/nuevo', component: LoginFormArtProdComponent},
+  { path: 'perfil', component: UserProfileComponent},
   { path: '**', redirectTo: '/eventos' }
   
 ];

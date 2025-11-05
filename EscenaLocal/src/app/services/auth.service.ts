@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 export interface Rol {
   id: number;
@@ -11,7 +11,7 @@ export interface AuthRequest {
   username: string;
   password: string;
   email?: string;
-  rol: string; // el que eligió en el combo
+  rol: string; 
 }
 
 export interface RegisterRequest {
@@ -41,8 +41,14 @@ export class AuthService {
   // =====================
 
   login(request: AuthRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request);
-  }
+  return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
+    tap((response) => {
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('userId', response.userId.toString());
+    })
+  );
+}
+
 
   register(data: RegisterRequest, rolId: number): Observable<AuthResponse> {
     const formData = new FormData();
