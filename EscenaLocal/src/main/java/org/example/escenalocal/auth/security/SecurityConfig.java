@@ -6,6 +6,7 @@ import org.example.escenalocal.auth.security.JwtUtil;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.*;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,6 +19,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
   @Autowired
@@ -41,6 +43,7 @@ public class SecurityConfig {
       )
       .authorizeHttpRequests(auth -> auth
         .requestMatchers( "/auth/**",
+          "/auth/login",
           "/h2-console/**",
           "/swagger-ui/**",
           "/v3/api-docs/**",
@@ -53,6 +56,7 @@ public class SecurityConfig {
           "/establecimientos/**",
           "/clasificaciones/**",
           "/entradas/**",
+          "/productores/**",
           "/webjars/**",
         "/payments/create-preference/**").permitAll()
         .anyRequest().authenticated()

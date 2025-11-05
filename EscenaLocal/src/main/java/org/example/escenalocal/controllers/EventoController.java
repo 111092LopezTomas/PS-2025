@@ -15,6 +15,7 @@ import org.example.escenalocal.entities.EventoEntity;
 import org.example.escenalocal.repositories.EventoRepository;
 import org.example.escenalocal.services.EventoService;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -56,6 +57,7 @@ public class EventoController {
     )
   )
   @PostMapping(path="/nuevo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("hasAuthority('ROL_PRODUCTOR')")
   public ResponseEntity<GetEventoDto> crearEvento(
     @RequestPart("dto") String dtoJson,
     @RequestPart(value = "imagen", required = false) MultipartFile imagen
@@ -115,6 +117,7 @@ public class EventoController {
     )
   )
   @PutMapping(path = "/editar/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  @PreAuthorize("hasAuthority('ROL_PRODUCTOR')")
   public ResponseEntity<GetEventoDto> actualizarEvento(
     @PathVariable Long id,
     @RequestPart("dto") String dtoJson,

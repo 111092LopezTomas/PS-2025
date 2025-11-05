@@ -15,7 +15,7 @@ import { UsuarioService } from '../../services/usuario.service';
 })
 export class LoginComponent implements AfterViewInit {
 
-  model: AuthRequest = { username: '', password: '' };
+  model: AuthRequest = { username: '', password: '', rol: 'ROL_USUARIO' };
   error: string | null = null;
   @ViewChild('usernameInput') usernameInput!: ElementRef<HTMLInputElement>;
 

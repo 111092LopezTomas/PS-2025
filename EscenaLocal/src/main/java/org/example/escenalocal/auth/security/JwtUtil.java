@@ -21,16 +21,30 @@ public class JwtUtil {
     return Keys.hmacShaKeyFor(secret.getBytes());
   }
 
-  public String generateToken(String username) {
+//  public String generateToken(String username) {
+//    Date now = new Date();
+//    Date expiry = new Date(now.getTime() + expirationMs);
+//    return Jwts.builder()
+//      .setSubject(username)
+//      .setIssuedAt(now)
+//      .setExpiration(expiry)
+//      .signWith(getKey(), SignatureAlgorithm.HS256)
+//      .compact();
+//  }
+
+  public String generateToken(String username, String role) {
     Date now = new Date();
     Date expiry = new Date(now.getTime() + expirationMs);
+
     return Jwts.builder()
       .setSubject(username)
+      .claim("role", role) // 👈 acá agregás el rol directamente
       .setIssuedAt(now)
       .setExpiration(expiry)
       .signWith(getKey(), SignatureAlgorithm.HS256)
       .compact();
   }
+
 
   public String extractUsername(String token) {
     return Jwts.parserBuilder().setSigningKey(getKey()).build()

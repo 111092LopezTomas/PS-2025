@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 })
 export class LoginFormComponent {
 
-  model: AuthRequest = { username: '', password: '', email: '' };
+  model: AuthRequest = { username: '', password: '', email: '', rol: 'ROL_USUARIO' };
   selectedFile: File | null = null;
   modoRegistro: boolean = true;
   error: string | null = null;
@@ -44,9 +44,10 @@ export class LoginFormComponent {
       password: this.model.password,
       email: this.model.email!,
       imagen: this.selectedFile || undefined // 👈 incluimos la imagen directamente
+
     };
 
-    this.authService.register(data).subscribe({
+    this.authService.register(data, 1).subscribe({
       next: (res) => {
         localStorage.setItem('jwt', res.token);
         localStorage.setItem('usuarioId', res.userId.toString());

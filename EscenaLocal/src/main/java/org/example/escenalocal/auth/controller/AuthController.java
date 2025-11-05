@@ -1,6 +1,7 @@
 package org.example.escenalocal.auth.controller;
 
 import org.example.escenalocal.auth.dtos.*;
+import org.example.escenalocal.auth.repository.RolRepository;
 import org.example.escenalocal.auth.repository.UserRepository;
 import org.example.escenalocal.auth.service.AuthService;
 import org.example.escenalocal.entities.UsuarioEntity;
@@ -8,6 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -32,9 +36,10 @@ public class AuthController {
     @RequestPart("username") String username,
     @RequestPart("password") String password,
     @RequestPart("email") String email,
+    @RequestParam Long rolId,
     @RequestPart(value = "imagen", required = false) MultipartFile imagen) {
 
-    RegisterRequest req = new RegisterRequest(username, password, email, imagen);
+    RegisterRequest req = new RegisterRequest(username, password, email, imagen, rolId);
     return ResponseEntity.ok(authService.register(req));
   }
 
@@ -64,4 +69,10 @@ public class AuthController {
       .body(u.getImagenDatos());
   }
 
+  @GetMapping("/roles")
+  public ResponseEntity<List<GetRolDto>> obtenerRoles() {
+    List<GetRolDto> list = authService.getRoles();
+    return ResponseEntity.ok(list);
+
+  }
 }

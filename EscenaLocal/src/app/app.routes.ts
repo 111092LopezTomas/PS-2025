@@ -9,14 +9,19 @@ import { LoginFormComponent } from './components/login-form/login-form.component
 
 import { EventUpdateComponent } from './components/event-update/event-update.component';
 import { EstablishmentComponent } from './components/establishment/establishment.component';
+import { LoginArtProdComponent } from './components/login-art-prod/login-art-prod.component';
+import { RoleGuard } from './role.guard';
+import { LoginFormArtProdComponent } from './components/login-form-art-prod/login-form-art-prod.component';
 
 export const routes: Routes = [
   
   { path: '', redirectTo: '/eventos', pathMatch: 'full' },
   { path: 'eventos', component: EventListComponent },
-  { path: 'eventos/nuevo', component: EventFormComponent, canActivate: [AuthGuard]},
+  { path: 'eventos/nuevo', component: EventFormComponent, canActivate: [RoleGuard],
+    data: { role: 'ROL_PRODUCTOR' }},
   { path: 'evento/:id', component: EventViewComponent },
-  { path: 'eventos/editar/:id', component: EventUpdateComponent },
+  { path: 'eventos/editar/:id', component: EventUpdateComponent, canActivate: [RoleGuard],
+    data: { role: 'ROL_PRODUCTOR' }},
   { path: 'checkout', component: CheckoutComponent },
   { path: 'checkout/success', component: CheckoutComponent, canActivate: [AuthGuard] },
   { path: 'checkout/pending', component: CheckoutComponent, canActivate: [AuthGuard] },
@@ -24,6 +29,8 @@ export const routes: Routes = [
   { path: 'establecimientos/:id', component: EstablishmentComponent},
   { path: 'login', component: LoginComponent },
   { path: 'login/nuevo', component: LoginFormComponent },
+  { path: 'login/art-prod', component: LoginArtProdComponent },
+  { path: 'login/art-prod/nuevo', component: LoginFormArtProdComponent},
   { path: '**', redirectTo: '/eventos' }
   
 ];

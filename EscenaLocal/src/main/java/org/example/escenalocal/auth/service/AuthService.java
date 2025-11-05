@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AuthService {
@@ -33,41 +35,63 @@ public class AuthService {
 
   public AuthResponse login(AuthRequest req) {
     UsernamePasswordAuthenticationToken authToken =
-      new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword());
-    authManager.authenticate(authToken); // lanzará excepción si falla
+      new UsernamePasswordAuthenticationToken(
+        req.getUsername(),
+        req.getPassword()
+      );
+    authManager.authenticate(authToken);
 
-    // Obtener el usuario desde la base
+    // 2) buscar usuario REAL en la base
     UsuarioEntity usuario = userRepo.findByUsername(req.getUsername())
-      .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+      .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    String token = jwtUtil.generateToken(req.getUsername());
+    // 3) obtener rol REAL de la base (NO usar el del request)
+    String rolReal = usuario.getRol().getRol(); // p.ej. "ROL_PRODUCTOR"
 
+    // 4) generar token con el rol REAL
+    String token = jwtUtil.generateToken(usuario.getUsername(), rolReal);
+
+    // 5) devolver respuesta al front
     return new AuthResponse(token, usuario.getId());
   }
 
-  public AuthResponse register(RegisterRequest req) {
-    if (userRepo.existsByUsername(req.getUsername())) {
-      throw new RuntimeException("Usuario ya existe");
-    }
-
-    // Buscar rol por defecto en la base de datos
-    RolEntity rolUser = rolRepo.findByRol("ROL_USUARIO")
-      .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
-
-    UsuarioEntity u = new UsuarioEntity();
-    u.setUsername(req.getUsername());
-    u.setPassword(passwordEncoder.encode(req.getPassword()));
-    u.setEmail(req.getEmail());
-    u.setRol(rolUser);
-    userRepo.save(u);
-
-    if (req.getImagen() != null && !req.getImagen().isEmpty()) {
-      guardarImagenUsuario(u.getId(), req.getImagen());
-    }
-
-    String token = jwtUtil.generateToken(u.getUsername());
-    return new AuthResponse(token, u.getId());
+public AuthResponse register(RegisterRequest req) {
+  if (userRepo.existsByUsername(req.getUsername())) {
+    throw new RuntimeException("Usuario ya existe");
   }
+
+  // 1. obtener el rol: si viene rolId, usarlo; si no, usar el default
+  RolEntity rolEntity;
+
+  if (req.getRolId() != null) {
+    // buscar por id
+    rolEntity = rolRepo.findById(req.getRolId())
+      .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+  } else {
+    // fallback al rol por defecto
+    rolEntity = rolRepo.findByRol("ROL_USUARIO")
+      .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+  }
+
+  // 2. crear usuario
+  UsuarioEntity u = new UsuarioEntity();
+  u.setUsername(req.getUsername());
+  u.setPassword(passwordEncoder.encode(req.getPassword()));
+  u.setEmail(req.getEmail());
+  u.setRol(rolEntity);
+  userRepo.save(u);
+
+  // 3. guardar imagen si vino
+  if (req.getImagen() != null && !req.getImagen().isEmpty()) {
+    guardarImagenUsuario(u.getId(), req.getImagen());
+  }
+
+  // 4. generar token con el rol REAL que quedó en el usuario
+  String token = jwtUtil.generateToken(u.getUsername(), u.getRol().getRol());
+
+  return new AuthResponse(token, u.getId());
+}
+
 
   public void guardarImagenUsuario(Long usuarioId, MultipartFile file) {
     if (file == null || file.isEmpty()) return;
@@ -94,5 +118,18 @@ public class AuthService {
     } catch (IOException e) {
       throw new RuntimeException("No se pudo leer la imagen: " + e.getMessage(), e);
     }
+  }
+
+  public List<GetRolDto> getRoles() {
+    List<RolEntity> roles = rolRepo.findAll();
+    List<GetRolDto> list = new ArrayList<>();
+    for (RolEntity rol : roles) {
+      GetRolDto dto = new GetRolDto();
+      dto.setId(rol.getId());
+      dto.setRol(rol.getRol());
+      list.add(dto);
+    }
+
+    return list;
   }
 }
