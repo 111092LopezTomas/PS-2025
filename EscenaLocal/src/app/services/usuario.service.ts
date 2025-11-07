@@ -47,7 +47,13 @@ export class UsuarioService {
     return this.http.post<any>(`${this.authUrl}/register/art-prod`, data);
   }
 
-  updateUsuario(id: number, data: FormData): Observable<void> {
-    return this.http.put<void>(`${this.authUrl}/usuarios/${id}`, data);
-  }
+  updateUsuarioJson(id: number, dto: any) {
+  return this.http.put<void>(`${this.authUrl}/usuarios/${id}`, dto);
+}
+
+subirImagenUsuario(id: number, file: File) {
+  const fd = new FormData();
+  fd.append('file', file);
+  return this.http.post<void>(`${this.authUrl}/${id}/imagen`, fd);
+}
 }

@@ -26,42 +26,50 @@
         <input type="password" name="password" [(ngModel)]="model.password" class="form-control" />
       </div>
 
-      <!-- Nombre -->
-      <div class="mb-3">
-        <label class="form-label">Nombre</label>
-        <input name="nombre" [(ngModel)]="nombre" class="form-control" required />
-      </div>
+      <!-- 🔸 Campos de artista/productor -->
+      <ng-container *ngIf="esArtistaProd">
+        <!-- Nombre -->
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input name="nombre" [(ngModel)]="nombre" class="form-control" />
+        </div>
 
-      <!-- Representante -->
-      <div class="mb-3">
-        <label class="form-label">Representante</label>
-        <input name="representante" [(ngModel)]="representante" class="form-control" />
-      </div>
+        <!-- Representante -->
+        <div class="mb-3">
+          <label class="form-label">Representante</label>
+          <input name="representante" [(ngModel)]="representante" class="form-control" />
+        </div>
 
-      <!-- Teléfono -->
-      <div class="mb-3">
-        <label class="form-label">Teléfono representante</label>
-        <input name="telefono_representante" [(ngModel)]="telefono_representante" class="form-control" />
-      </div>
+        <!-- Teléfono -->
+        <div class="mb-3">
+          <label class="form-label">Teléfono representante</label>
+          <input name="telefono_representante" [(ngModel)]="telefono_representante" class="form-control" />
+        </div>
 
-      <!-- Red social -->
-      <div class="mb-3">
-        <label class="form-label">Red social</label>
-        <input name="red_social" [(ngModel)]="red_social" class="form-control" />
-      </div>
+        <!-- Red social -->
+        <div class="mb-3">
+          <label class="form-label">Red social</label>
+          <input name="red_social" [(ngModel)]="red_social" class="form-control" />
+        </div>
 
-      <!-- Género (solo artista) -->
-      <div class="mb-3" *ngIf="esArtista()">
-        <label class="form-label">Género musical</label>
-        <select class="form-select" name="idGenero" [(ngModel)]="idGenero">
-          <option [ngValue]="null">Seleccione un género</option>
-          <option *ngFor="let g of generos" [value]="g.id">{{ g.genero }}</option>
-        </select>
-      </div>
+        <!-- Género (solo si es artista) -->
+        <div class="mb-3" *ngIf="esArtista()">
+          <label class="form-label">Género musical</label>
+          <select class="form-select" name="idGenero" [(ngModel)]="idGenero">
+            <option [ngValue]="null">Seleccione un género</option>
+            <option *ngFor="let g of generos" [value]="g.id">{{ g.genero }}</option>
+          </select>
+        </div>
+      </ng-container>
 
       <!-- Imagen actual -->
       <div class="text-center mb-3" *ngIf="imagenUrl">
-        <img [src]="imagenUrl" alt="Foto de perfil" class="rounded-circle shadow-sm" style="width: 100px; height: 100px; object-fit: cover;" />
+        <img
+          [src]="imagenUrl"
+          alt="Foto de perfil"
+          class="rounded-circle shadow-sm"
+          style="width: 100px; height: 100px; object-fit: cover;"
+        />
       </div>
 
       <!-- Nueva imagen -->

@@ -7,6 +7,7 @@ import org.example.escenalocal.auth.security.JwtUtil;
 import org.example.escenalocal.auth.service.AuthService;
 import org.example.escenalocal.dtos.get.GetArtProdDto;
 import org.example.escenalocal.dtos.post.PostArtProdDto;
+import org.example.escenalocal.dtos.put.UpdateArtProdDto;
 import org.example.escenalocal.entities.*;
 import org.example.escenalocal.repositories.ArtistaRepository;
 import org.example.escenalocal.repositories.GeneroRepository;
@@ -205,69 +206,47 @@ public class AuthController {
     return ResponseEntity.ok(new AuthResponse(token, user.getId()));
   }
 
-  @PutMapping(value = "/usuarios/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Void> actualizarUsuario(
+  @PutMapping("/usuarios/{id}")
+  public ResponseEntity<Void> actualizarUsuarioJson(
     @PathVariable Long id,
-    @RequestPart("username") String username,
-    @RequestPart("email") String email,
-    @RequestPart(value = "password", required = false) String password,
-    @RequestPart(value = "nombre", required = false) String nombre,
-    @RequestPart(value = "representante", required = false) String representante,
-    @RequestPart(value = "telefono_representante", required = false) String telefonoRepresentante,
-    @RequestPart(value = "red_social", required = false) String redSocial,
-    @RequestPart(value = "idGenero", required = false) Long idGenero,
-    @RequestPart(value = "imagen", required = false) MultipartFile imagen
+    @RequestBody UpdateArtProdDto dto
   ) {
-
-    // 1) buscar usuario
     UsuarioEntity usuario = userRepo.findById(id)
       .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    // 2) actualizar datos básicos (sin tocar rol)
-    usuario.setUsername(username);
-    usuario.setEmail(email);
-
-    if (password != null && !password.isBlank()) {
-      usuario.setPassword(passwordEncoder.encode(password));
+    // datos básicos
+    usuario.setUsername(dto.getUsername());
+    usuario.setEmail(dto.getEmail());
+    if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+      usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
     }
-
     userRepo.save(usuario);
 
-    // 3) según el rol, actualizar artista o productor
-    String rolNombre = usuario.getRol().getRol(); // ej: ROL_ARTISTA, ROL_PRODUCTOR
+    String rolNombre = usuario.getRol().getRol();
 
+    // si es artista
     if ("ROL_ARTISTA".equals(rolNombre)) {
-      ArtistaEntity artista = artistaRepo.findById(usuario.getId())
-        .orElseThrow(() -> new RuntimeException("Artista no encontrado para el usuario"));
-
-      if (nombre != null) artista.setNombre(nombre);
-      if (representante != null) artista.setRepresentante(representante);
-      if (telefonoRepresentante != null) artista.setTelefono_representante(telefonoRepresentante);
-      if (redSocial != null) artista.setRed_social(redSocial);
-
-      if (idGenero != null) {
-        GeneroEntity genero = generoRepo.findById(idGenero)
-          .orElseThrow(() -> new RuntimeException("Género no encontrado"));
-        artista.setGenero(genero);
-      }
-
-      artistaRepo.save(artista);
-
-    } else if ("ROL_PRODUCTOR".equals(rolNombre)) {
-      ProductorEntity productor = productorRepo.findById(usuario.getId())
-        .orElseThrow(() -> new RuntimeException("Productor no encontrado para el usuario"));
-
-      if (nombre != null) productor.setNombre(nombre);
-      if (representante != null) productor.setRepresentante(representante);
-      if (telefonoRepresentante != null) productor.setTelefono_representante(telefonoRepresentante);
-      if (redSocial != null) productor.setRed_social(redSocial);
-
-      productorRepo.save(productor);
+      artistaRepo.findByUsuario(usuario).ifPresent(artista -> {
+        artista.setNombre(dto.getNombre());
+        artista.setRepresentante(dto.getRepresentante());
+        artista.setTelefono_representante(dto.getTelefono_representante());
+        artista.setRed_social(dto.getRed_social());
+        if (dto.getIdGenero() != null) {
+          generoRepo.findById(dto.getIdGenero()).ifPresent(artista::setGenero);
+        }
+        artistaRepo.save(artista);
+      });
     }
 
-    // 4) si vino imagen, la guardamos igual que en el POST
-    if (imagen != null && !imagen.isEmpty()) {
-      authService.guardarImagenUsuario(usuario.getId(), imagen);
+    // si es productor
+    if ("ROL_PRODUCTOR".equals(rolNombre)) {
+      productorRepo.findByUsuario(usuario).ifPresent(productor -> {
+        productor.setNombre(dto.getNombre());
+        productor.setRepresentante(dto.getRepresentante());
+        productor.setTelefono_representante(dto.getTelefono_representante());
+        productor.setRed_social(dto.getRed_social());
+        productorRepo.save(productor);
+      });
     }
 
     return ResponseEntity.ok().build();

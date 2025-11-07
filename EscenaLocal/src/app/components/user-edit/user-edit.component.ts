@@ -36,7 +36,7 @@ export class UserEditComponent implements OnInit {
   loading = true;
 
   private userId!: number;
-  usuarioRol: string | null = null; // 👈 rol que viene del back
+  esArtistaProd = false; // 🔸 controla la visibilidad de campos extendidos
 
   constructor(
     private usuarioService: UsuarioService,
@@ -44,40 +44,43 @@ export class UserEditComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // ahora tomamos el id del localStorage (como vimos antes)
-    const idFromStorage = this.authService.getUserId();
-    if (!idFromStorage) {
+    const idFromToken = this.authService.getUserId();
+
+    if (!idFromToken) {
       this.error = 'No se pudo obtener el usuario actual.';
       this.loading = false;
       return;
     }
 
-    this.userId = Number(idFromStorage);
+    this.userId = Number(idFromToken);
 
     // cargar datos del usuario logueado
     this.usuarioService.getUsuarioById(this.userId).subscribe({
       next: (u: any) => {
-        // Asignar valores al modelo
+        // datos básicos
         this.model.username = u.username || '';
         this.model.email = u.email || '';
 
-        // guardar rol que vino del back
-        this.usuarioRol = u.rol || null;
+        // detectar rol y activar flag
+        const rol = u.rol || '';
+        if (rol === 'ROL_ARTISTA' || rol === 'ROL_PRODUCTOR') {
+          this.esArtistaProd = true;
+        }
 
-        // datos extra según artista/productor
+        // datos extendidos
         this.nombre = u.nombre || '';
         this.representante = u.representante || '';
         this.telefono_representante = u.telefono_representante || '';
         this.red_social = u.red_social || '';
         this.idGenero = u.idGenero || u.genero?.id || null;
 
-        // si tu back sirve imagen
+        // imagen actual
         if (u.id) {
           this.imagenUrl = `http://localhost:8080/auth/${u.id}/imagen`;
         }
 
-        // cargar géneros solo si el usuario ES artista
-        if (this.esArtista()) {
+        // cargar géneros solo si es artista
+        if (rol === 'ROL_ARTISTA') {
           this.usuarioService.getGeneros().subscribe({
             next: (gs) => (this.generos = gs),
           });
@@ -93,9 +96,9 @@ export class UserEditComponent implements OnInit {
     });
   }
 
-  // 👇 ahora no dependemos del AuthService para saber el rol
   esArtista(): boolean {
-    return this.usuarioRol === 'ROL_ARTISTA';
+    // si querés mantener esta función para mostrar el select de género
+    return this.authService.tieneRol('ROL_ARTISTA');
   }
 
   onFileSelected(event: any) {
@@ -107,31 +110,37 @@ export class UserEditComponent implements OnInit {
     this.error = '';
     this.success = '';
 
-    const formData = new FormData();
-    formData.append('username', this.model.username);
-    formData.append('email', this.model.email);
+    const dto: any = {
+      username: this.model.username,
+      email: this.model.email,
+      nombre: this.nombre,
+      representante: this.representante,
+      telefono_representante: this.telefono_representante,
+      red_social: this.red_social,
+      idGenero: this.idGenero,
+    };
 
     if (this.model.password && this.model.password.trim() !== '') {
-      formData.append('password', this.model.password);
+      dto.password = this.model.password;
     }
 
-    formData.append('nombre', this.nombre);
-    formData.append('representante', this.representante);
-    formData.append('telefono_representante', this.telefono_representante);
-    formData.append('red_social', this.red_social);
-
-    if (this.idGenero !== null) {
-      formData.append('idGenero', this.idGenero.toString());
-    }
-
-    if (this.selectedFile) {
-      formData.append('imagen', this.selectedFile);
-    }
-
-    this.usuarioService.updateUsuario(this.userId, formData).subscribe({
+    this.usuarioService.updateUsuarioJson(this.userId, dto).subscribe({
       next: () => {
-        this.success = 'Datos actualizados correctamente';
-        this.model.password = '';
+        if (this.selectedFile) {
+          this.usuarioService.subirImagenUsuario(this.userId, this.selectedFile).subscribe({
+            next: () => {
+              this.success = 'Datos actualizados correctamente';
+              this.model.password = '';
+            },
+            error: (err) => {
+              console.error(err);
+              this.success = 'Datos actualizados, pero no se pudo subir la imagen';
+            },
+          });
+        } else {
+          this.success = 'Datos actualizados correctamente';
+          this.model.password = '';
+        }
       },
       error: (err) => {
         console.error(err);
