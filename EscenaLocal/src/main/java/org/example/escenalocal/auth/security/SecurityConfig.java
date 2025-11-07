@@ -50,9 +50,9 @@ public class SecurityConfig {
           "/v3/api-docs.yaml",
           "/swagger-resources/**",
           "/artistas/**",
-
+          "/provincias/**",
           "/eventos/**",
-
+          "/generos/**",
           "/establecimientos/**",
           "/clasificaciones/**",
           "/entradas/**",

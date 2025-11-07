@@ -41,6 +41,10 @@ public class ArtistaEntity {
     @JoinColumn(name = "idGenero")
     private GeneroEntity genero;
 
+    @OneToOne
+    @JoinColumn(name = "idUsuario")
+    private UsuarioEntity usuario;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

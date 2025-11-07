@@ -42,6 +42,7 @@
           <button class="dropdown-item custom-item" (click)="irAlLogin()">Iniciar sesión</button>
         </li>
         <li *ngIf="isLoggedIn()">
+          <button class="dropdown-item custom-item text-danger" (click)="verPerfil()">Ver perfil</button>
           <button class="dropdown-item custom-item text-danger" (click)="cerrarSesion()">Cerrar sesión</button>
         </li>
       </ul>

@@ -27,4 +27,8 @@ public class ProductorEntity {
 
   @Column
   private String red_social;
+
+  @OneToOne
+  @JoinColumn(name = "idUsuario")
+  private UsuarioEntity usuario;
 }

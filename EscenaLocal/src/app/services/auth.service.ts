@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 export interface Rol {
   id: number;
@@ -11,7 +11,7 @@ export interface AuthRequest {
   username: string;
   password: string;
   email?: string;
-  rol: string; 
+  rol: string;
 }
 
 export interface RegisterRequest {
@@ -33,6 +33,15 @@ export class AuthService {
 
   private apiUrl = 'http://localhost:8080/auth';
   private tokenKey = 'auth_token';
+  private userIdKey = 'userId';
+
+  // estado reactivo
+  private loggedIn$ = new BehaviorSubject<boolean>(!!this.getToken());
+  private avatarUrl$ = new BehaviorSubject<string | null>(null);
+
+  // expuestos
+  loginState$ = this.loggedIn$.asObservable();
+  avatarState$ = this.avatarUrl$.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -41,14 +50,24 @@ export class AuthService {
   // =====================
 
   login(request: AuthRequest): Observable<AuthResponse> {
-  return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
-    tap((response) => {
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('userId', response.userId.toString());
-    })
-  );
-}
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
+      tap((response) => {
+        // 1) guardo token con la key correcta
+        this.saveToken(response.token);
 
+        // 2) guardo userId
+        localStorage.setItem(this.userIdKey, response.userId.toString());
+
+        // 3) emito que hay login
+        this.loggedIn$.next(true);
+
+        // 4) emito la URL de la imagen para navbar/perfil
+        // tu endpoint: GET /auth/{id}/imagen
+        const imgUrl = `${this.apiUrl}/${response.userId}/imagen?ts=${Date.now()}`;
+        this.setAvatar(imgUrl);
+      })
+    );
+  }
 
   register(data: RegisterRequest, rolId: number): Observable<AuthResponse> {
     const formData = new FormData();
@@ -61,7 +80,19 @@ export class AuthService {
       formData.append('imagen', data.imagen);
     }
 
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, formData);
+    // si tu backend devuelve también token y userId en el register
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, formData).pipe(
+      tap((response) => {
+        if (response?.token) {
+          this.saveToken(response.token);
+          localStorage.setItem(this.userIdKey, response.userId.toString());
+          this.loggedIn$.next(true);
+
+          const imgUrl = `${this.apiUrl}/${response.userId}/imagen?ts=${Date.now()}`;
+          this.setAvatar(imgUrl);
+        }
+      })
+    );
   }
 
   getRoles(): Observable<Rol[]> {
@@ -84,6 +115,11 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
   }
 
+  getUserId(): number | null {
+    const raw = localStorage.getItem(this.userIdKey);
+    return raw ? Number(raw) : null;
+  }
+
   // =====================
   // JWT UTILS
   // =====================
@@ -98,10 +134,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Devuelve el rol real que viene en el token.
-   * Ajustá acá según cómo lo estés mandando desde Spring.
-   */
   getRoleFromToken(): string | null {
     const token = this.getToken();
     if (!token) return null;
@@ -109,7 +141,6 @@ export class AuthService {
     const payload = this.decodeToken(token);
     if (!payload) return null;
 
-    // acá probamos varios nombres típicos
     const role =
       payload.role ||
       payload.rol ||
@@ -119,40 +150,81 @@ export class AuthService {
     return role ?? null;
   }
 
-  /**
-   * Compara el rol que eligió en el combo con el que realmente tiene el usuario.
-   * Devuelve true si coincide, false si no.
-   */
-  /* validateSelectedRole(selectedRole: string): boolean {
-    const realRole = this.getRoleFromToken();
-    if (!realRole) return false;
-    return realRole === selectedRole; */
-  // }
-
   validateSelectedRole(selectedRole: string): boolean {
-  const token = this.getToken();
-  if (!token) {
-    console.log('No hay token');
-    return false;
+    const token = this.getToken();
+    if (!token) {
+      console.log('No hay token');
+      return false;
+    }
+    const payload = this.decodeToken(token);
+    console.log('payload del token:', payload);
+
+    const realRole =
+      payload.role ||
+      payload.rol ||
+      (Array.isArray(payload.authorities) ? payload.authorities[0] : null);
+
+    console.log('rol real:', realRole, 'rol elegido:', selectedRole);
+
+    return realRole === selectedRole;
   }
-  const payload = this.decodeToken(token);
-  console.log('payload del token:', payload); // 👈 mirá acá qué viene
 
-  const realRole =
-    payload.role ||
-    payload.rol ||
-    (Array.isArray(payload.authorities) ? payload.authorities[0] : null);
+  // =====================
+  // LOGIN STATE HELPERS
+  // =====================
 
-  console.log('rol real:', realRole, 'rol elegido:', selectedRole);
-
-  return realRole === selectedRole;
-}
-
-
-  /**
-   * Útil para guards
-   */
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
+
+  logout(): void {
+    this.clearToken();
+    localStorage.removeItem(this.userIdKey);
+    this.loggedIn$.next(false);
+    this.avatarUrl$.next(null);
+  }
+
+  // =====================
+  // AVATAR
+  // =====================
+
+  setAvatar(url: string | null): void {
+    this.avatarUrl$.next(url);
+  }
+
+  registerArtProd(body: any): Observable<AuthResponse> {
+  return this.http.post<AuthResponse>('http://localhost:8080/auth/register/art-prod', body);
+  }
+
+  getUserIdFromToken(): number | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    const decoded = this.decodeToken(token);
+    if (!decoded) return null;
+
+    return decoded.id || decoded.userId || null;
+  }
+
+   getUserRoleFromToken(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    const decoded = this.decodeToken(token);
+    if (!decoded) return null;
+
+    // en tu back dijiste que generabas algo como jwtUtil.generateToken(u.getUsername(), u.getRol().getRol());
+    // así que probablemente venga como "role" o "rol"
+    return decoded.role || decoded.rol || null;
+  }
+
+  // 👉 este es el que te faltaba
+  tieneRol(rol: string): boolean {
+    const userRol = this.getUserRoleFromToken();
+    return userRol === rol;
+  }
 }
+
+
+
+

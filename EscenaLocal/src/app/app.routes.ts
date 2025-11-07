@@ -13,6 +13,7 @@ import { LoginArtProdComponent } from './components/login-art-prod/login-art-pro
 import { RoleGuard } from './role.guard';
 import { LoginFormArtProdComponent } from './components/login-form-art-prod/login-form-art-prod.component';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
+import { UserEditComponent } from './components/user-edit/user-edit.component';
 
 export const routes: Routes = [
   
@@ -33,6 +34,7 @@ export const routes: Routes = [
   { path: 'login/art-prod', component: LoginArtProdComponent },
   { path: 'login/art-prod/nuevo', component: LoginFormArtProdComponent},
   { path: 'perfil', component: UserProfileComponent},
+  { path: 'perfil/editar', component: UserEditComponent},
   { path: '**', redirectTo: '/eventos' }
   
 ];

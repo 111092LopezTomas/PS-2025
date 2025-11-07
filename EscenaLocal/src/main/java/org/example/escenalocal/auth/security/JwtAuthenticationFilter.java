@@ -23,39 +23,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     this.userDetailsService = userDetailsService;
   }
 
+  // 👇👇👇 AÑADÍ ESTO
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    String path = request.getServletPath();
+    // ignorá todas las públicas
+    return path.startsWith("/auth")
+      || path.startsWith("/swagger-ui")
+      || path.startsWith("/v3/api-docs")
+      || path.startsWith("/h2-console")
+      || path.startsWith("/swagger-resources")
+      || path.startsWith("/webjars")
+      || path.startsWith("/generos")      // <--- lo que te está pegando Angular
+      || path.startsWith("/api/generos"); // por si después lo pasás a /api
+  }
+  // 👆👆👆
+
+  @Override
+  protected void doFilterInternal(HttpServletRequest request,
+                                  HttpServletResponse response,
+                                  FilterChain filterChain)
     throws ServletException, IOException {
 
     String path = request.getServletPath();
-
     System.out.println("Interceptando: " + path);
-
-    // Ignorar endpoints públicos
-    if (path.startsWith("/auth") ||
-      path.startsWith("/swagger-ui") ||
-      path.startsWith("/v3/api-docs") ||
-      path.startsWith("/h2-console") ||
-      path.startsWith("/swagger-resources") ||
-      path.startsWith("/webjars")) {
-      filterChain.doFilter(request, response);
-      return;
-    }
 
     String header = request.getHeader("Authorization");
     System.out.println("Header: " + header);
-    if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
 
+    if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
       String token = header.substring(7);
       try {
         if (jwtUtil.validateToken(token)) {
-
           String username = jwtUtil.extractUsername(token);
-          System.out.println("Usuario extraído del token: " + username);
           UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
           UsernamePasswordAuthenticationToken authentication =
-            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            new UsernamePasswordAuthenticationToken(
+              userDetails,
+              null,
+              userDetails.getAuthorities()
+            );
           SecurityContextHolder.getContext().setAuthentication(authentication);
         }
       } catch (Exception e) {

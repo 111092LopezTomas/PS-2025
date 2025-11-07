@@ -1,0 +1,80 @@
+<div class="container mt-4" style="max-width: 420px">
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem" role="status">
+      <span class="visually-hidden">Cargando datos...</span>
+    </div>
+    <p class="mt-2 text-muted">Cargando usuario...</p>
+  </div>
+
+  <div class="card p-3 shadow" *ngIf="!loading">
+    <form (ngSubmit)="onSubmit()" #editForm="ngForm">
+      <!-- Usuario -->
+      <div class="mb-3">
+        <label class="form-label">Usuario</label>
+        <input name="username" [(ngModel)]="model.username" required class="form-control" />
+      </div>
+
+      <!-- Email -->
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" [(ngModel)]="model.email" required class="form-control" />
+      </div>
+
+      <!-- Contraseña -->
+      <div class="mb-3">
+        <label class="form-label">Contraseña (opcional)</label>
+        <input type="password" name="password" [(ngModel)]="model.password" class="form-control" />
+      </div>
+
+      <!-- Nombre -->
+      <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input name="nombre" [(ngModel)]="nombre" class="form-control" required />
+      </div>
+
+      <!-- Representante -->
+      <div class="mb-3">
+        <label class="form-label">Representante</label>
+        <input name="representante" [(ngModel)]="representante" class="form-control" />
+      </div>
+
+      <!-- Teléfono -->
+      <div class="mb-3">
+        <label class="form-label">Teléfono representante</label>
+        <input name="telefono_representante" [(ngModel)]="telefono_representante" class="form-control" />
+      </div>
+
+      <!-- Red social -->
+      <div class="mb-3">
+        <label class="form-label">Red social</label>
+        <input name="red_social" [(ngModel)]="red_social" class="form-control" />
+      </div>
+
+      <!-- Género (solo artista) -->
+      <div class="mb-3" *ngIf="esArtista()">
+        <label class="form-label">Género musical</label>
+        <select class="form-select" name="idGenero" [(ngModel)]="idGenero">
+          <option [ngValue]="null">Seleccione un género</option>
+          <option *ngFor="let g of generos" [value]="g.id">{{ g.genero }}</option>
+        </select>
+      </div>
+
+      <!-- Imagen actual -->
+      <div class="text-center mb-3" *ngIf="imagenUrl">
+        <img [src]="imagenUrl" alt="Foto de perfil" class="rounded-circle shadow-sm" style="width: 100px; height: 100px; object-fit: cover;" />
+      </div>
+
+      <!-- Nueva imagen -->
+      <div class="mb-3">
+        <label class="form-label">Foto de perfil</label>
+        <input type="file" accept="image/*" (change)="onFileSelected($event)" class="form-control" />
+      </div>
+
+      <!-- Botón -->
+      <button class="btn btn-warning w-100" [disabled]="editForm.invalid">Guardar cambios</button>
+    </form>
+
+    <div *ngIf="error" class="alert alert-danger mt-2">{{ error }}</div>
+    <div *ngIf="success" class="alert alert-success mt-2">{{ success }}</div>
+  </div>
+</div>

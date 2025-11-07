@@ -153,7 +153,7 @@ export class LoginArtProdComponent implements OnInit, AfterViewInit {
   }
 
   irARegistrar() {
-    this.router.navigate(['/login/nuevo']);
+    this.router.navigate(['/login/art-prod/nuevo']);
   }
 
   cargarRoles() {

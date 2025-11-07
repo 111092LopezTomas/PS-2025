@@ -1,6 +1,7 @@
 <div class="container mt-4" style="max-width: 420px">
   <div class="card p-3 shadow">
     <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+      <!-- Datos de usuario -->
       <div class="mb-3">
         <label class="form-label">Usuario</label>
         <input
@@ -32,6 +33,8 @@
           class="form-control"
         />
       </div>
+
+      <!-- Rol -->
       <div class="mb-3">
         <label class="form-label">Rol</label>
         <select
@@ -41,20 +44,75 @@
           required
         >
           <option [ngValue]="null">Seleccione un rol</option>
-          <option *ngFor="let r of roles" [value]="r.id">{{ r.rol }}</option>
+          <option *ngFor="let r of roles" [value]="r.id">
+            {{ r.rol }}
+          </option>
         </select>
       </div>
+
+      <!-- Campos comunes Artista/Productor -->
       <div class="mb-3">
-        <!-- Imagen opcional solo si estamos en modo registro -->
-        <div *ngIf="modoRegistro" class="mb-3">
-          <label class="form-label">Foto de perfil (opcional)</label>
-          <input
-            type="file"
-            accept="image/*"
-            (change)="onFileSelected($event)"
-            class="form-control"
-          />
-        </div>
+        <label class="form-label">Nombre</label>
+        <input
+          name="nombre"
+          [(ngModel)]="nombre"
+          required
+          class="form-control"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Representante</label>
+        <input
+          name="representante"
+          [(ngModel)]="representante"
+          class="form-control"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Teléfono representante</label>
+        <input
+          name="telefono_representante"
+          [(ngModel)]="telefono_representante"
+          class="form-control"
+        />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Red social</label>
+        <input
+          name="red_social"
+          [(ngModel)]="red_social"
+          class="form-control"
+        />
+      </div>
+
+      <!-- SOLO si es artista, mostrar géneros -->
+      <div class="mb-3" *ngIf="esArtista()">
+        <label class="form-label">Género musical</label>
+        <select
+          class="form-select"
+          name="idGenero"
+          [(ngModel)]="idGenero"
+          [required]="esArtista()"
+        >
+          <option [ngValue]="null">Seleccione un género</option>
+          <option *ngFor="let g of generos" [value]="g.id">
+            {{ g.genero }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Imagen opcional -->
+      <div class="mb-3" *ngIf="modoRegistro">
+        <label class="form-label">Foto de perfil (opcional)</label>
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          class="form-control"
+        />
       </div>
 
       <button class="btn-orange w-100" [disabled]="registerForm.invalid">
