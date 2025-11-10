@@ -6,6 +6,7 @@ import org.example.escenalocal.entities.RolEntity;
 import org.example.escenalocal.entities.UsuarioEntity;
 import org.example.escenalocal.auth.repository.UserRepository;
 import org.example.escenalocal.auth.security.JwtUtil;
+import org.example.escenalocal.services.impl.NotificacionServiceImpl;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,14 +22,16 @@ public class AuthService {
   private final RolRepository rolRepo;
   private final PasswordEncoder passwordEncoder;
   private final JwtUtil jwtUtil;
+  private final NotificacionServiceImpl notificacionService;
 
   public AuthService(AuthenticationManager authManager, UserRepository userRepo, RolRepository rolRepo,
-                     PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+                     PasswordEncoder passwordEncoder, JwtUtil jwtUtil, NotificacionServiceImpl notificacionService) {
     this.authManager = authManager;
     this.userRepo = userRepo;
     this.rolRepo = rolRepo;
     this.passwordEncoder = passwordEncoder;
     this.jwtUtil = jwtUtil;
+    this.notificacionService = notificacionService;
   }
 
   public AuthResponse login(AuthRequest req) {
@@ -60,6 +63,11 @@ public class AuthService {
     u.setEmail(req.getEmail());
     u.setRol(rolUser);
     userRepo.save(u);
+
+
+    notificacionService.createBinvenidaNotificacion(
+      u.getId()
+    );
 
     if (req.getImagen() != null && !req.getImagen().isEmpty()) {
       guardarImagenUsuario(u.getId(), req.getImagen());

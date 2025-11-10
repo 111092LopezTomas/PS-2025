@@ -39,24 +39,44 @@
   <!-- Notificaciones y Usuario -->
   <ul class="navbar-nav d-flex flex-row ms-auto align-items-center">
 
-    <!-- Campanita -->
-    <li class="nav-item me-3">
-      <a class="nav-link text-light" href="#">
+    <!-- Campanita con dropdown -->
+    <li *ngIf="isLoggedIn()" class="nav-item dropdown me-3 position-relative">
+      <a class="nav-link d-flex align-items-center text-light" href="#" id="notificacionesDropdown" role="button"
+        data-bs-toggle="dropdown" aria-expanded="false">
         <i class="bi bi-bell fs-3"></i>
+        <span *ngIf="unreadCount > 0"
+          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          {{ unreadCount }}
+        </span>
       </a>
+
+      <!-- Menú desplegable de notificaciones -->
+      <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end mt-2 custom-dropdown"
+        aria-labelledby="notificacionesDropdown" style="position: absolute; top: 100%; right: 0; min-width: 280px;">
+
+        <li *ngIf="notificaciones.length === 0" class="dropdown-item text-muted text-center py-2">
+          Sin notificaciones
+        </li>
+
+        <ng-container *ngFor="let n of notificaciones">
+          <li>
+            <button class="dropdown-item custom-item" (click)="abrirNotificacion(n)">
+              {{ n.mensaje }}
+            </button>
+          </li>
+        </ng-container>
+      </ul>
     </li>
 
     <!-- Usuario con dropdown -->
     <li class="nav-item dropdown">
-      <!-- Toggle: imagen + flechita -->
-      <a class="nav-link d-flex align-items-center text-light dropdown-toggle" href="#" role="button"
+      <a class="nav-link d-flex align-items-center text-light" href="#" id="usuarioDropdown" role="button"
         data-bs-toggle="dropdown" aria-expanded="false">
         <img [src]="imagenUrl" alt="Usuario" class="rounded-circle me-2" width="60" height="60">
       </a>
-      <!-- Menú desplegable hacia abajo -->
 
       <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end mt-2 custom-dropdown"
-        style="position: absolute; top: 100%; right: 0;">
+        aria-labelledby="usuarioDropdown" style="position: absolute; top: 100%; right: 0;">
         <li *ngIf="!isLoggedIn()">
           <button class="dropdown-item custom-item" (click)="irAlLogin()">Iniciar sesión</button>
         </li>
@@ -64,8 +84,7 @@
           <button class="dropdown-item custom-item text-danger" (click)="cerrarSesion()">Cerrar sesión</button>
         </li>
       </ul>
-
     </li>
-
   </ul>
+
 </nav>
