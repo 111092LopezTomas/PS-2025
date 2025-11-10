@@ -1,0 +1,35 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+export interface Notificacion {
+  id: number;
+  mensaje: string;
+  leido: boolean;
+  creado?: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class NotificacionService {
+  // AJUSTÁ según tu backend real
+  private baseUrl = 'http://localhost:8080/api/notificaciones';
+
+  constructor(private http: HttpClient) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('jwt') || localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: token ? `Bearer ${token}` : ''
+    });
+  }
+
+  obtenerNotificaciones(userId: number): Observable<Notificacion[]> {
+    const headers = this.getAuthHeaders();
+    return this.http.get<Notificacion[]>(`${this.baseUrl}/${userId}`, { headers });
+  }
+
+  marcarComoLeido(id: number): Observable<any> {
+    const headers = this.getAuthHeaders();
+    return this.http.patch(`${this.baseUrl}/${id}/leido`, {}, { headers, responseType: 'text' as 'json' });
+  }
+}
