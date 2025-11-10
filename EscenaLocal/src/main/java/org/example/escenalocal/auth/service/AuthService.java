@@ -58,17 +58,12 @@ public class AuthService {
     return new AuthResponse(token, usuario.getId());
   }
 
-<<<<<<< HEAD
-public AuthResponse register(RegisterRequest req) {
-  if (userRepo.existsByUsername(req.getUsername())) {
-    throw new RuntimeException("Usuario ya existe");
-=======
+
   public AuthResponse register(RegisterRequest req) {
     if (userRepo.existsByUsername(req.getUsername())) {
       throw new RuntimeException("Usuario ya existe");
     }
 
-    // Buscar rol por defecto en la base de datos
     RolEntity rolUser = rolRepo.findByRol("ROL_USUARIO")
       .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
@@ -79,51 +74,18 @@ public AuthResponse register(RegisterRequest req) {
     u.setRol(rolUser);
     userRepo.save(u);
 
-
-    notificacionService.createBinvenidaNotificacion(
-      u.getId()
-    );
+    notificacionService.createBinvenidaNotificacion(u.getId());
 
     if (req.getImagen() != null && !req.getImagen().isEmpty()) {
       guardarImagenUsuario(u.getId(), req.getImagen());
     }
 
-    String token = jwtUtil.generateToken(u.getUsername());
+    // Generar token incluyendo el rol real
+    String token = jwtUtil.generateToken(u.getUsername(), u.getRol().getRol());
+
     return new AuthResponse(token, u.getId());
->>>>>>> backup-previo-pull
   }
 
-  // 1. obtener el rol: si viene rolId, usarlo; si no, usar el default
-  RolEntity rolEntity;
-
-  if (req.getRolId() != null) {
-    // buscar por id
-    rolEntity = rolRepo.findById(req.getRolId())
-      .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
-  } else {
-    // fallback al rol por defecto
-    rolEntity = rolRepo.findByRol("ROL_USUARIO")
-      .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
-  }
-
-  // 2. crear usuario
-  UsuarioEntity u = new UsuarioEntity();
-  u.setUsername(req.getUsername());
-  u.setPassword(passwordEncoder.encode(req.getPassword()));
-  u.setEmail(req.getEmail());
-  u.setRol(rolEntity);
-  userRepo.save(u);
-
-  // 3. guardar imagen si vino
-  if (req.getImagen() != null && !req.getImagen().isEmpty()) {
-    guardarImagenUsuario(u.getId(), req.getImagen());
-  }
-
-  // 4. generar token con el rol REAL que quedó en el usuario
-  String token = jwtUtil.generateToken(u.getUsername(), u.getRol().getRol());
-
-  return new AuthResponse(token, u.getId());
-}
 
 
   public void guardarImagenUsuario(Long usuarioId, MultipartFile file) {
