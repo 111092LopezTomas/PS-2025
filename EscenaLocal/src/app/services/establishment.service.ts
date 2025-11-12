@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 export interface EstablecimientoDetalle {
   id: number;
-  nombre: string;
+  establecimiento: string;
   capacidad: number;
   direccion: string;
   barrio: string;

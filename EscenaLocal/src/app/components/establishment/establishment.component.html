@@ -1,11 +1,7 @@
 <!-- Estado de Carga -->
 <div *ngIf="loading" class="container my-5">
   <div class="text-center py-5">
-    <div
-      class="spinner-border text-primary"
-      role="status"
-      style="width: 3rem; height: 3rem"
-    >
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem">
       <span class="visually-hidden">Cargando...</span>
     </div>
     <p class="mt-3 text-muted">Cargando establecimiento...</p>
@@ -36,16 +32,14 @@
       <div class="card shadow-lg rounded-4 border-0 establecimiento-card">
 
         <!-- Header -->
-        <div
-          class="card-header bg-dark text-white d-flex justify-content-between align-items-start rounded-top-4"
-        >
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-start rounded-top-4">
           <div>
             <span class="badge bg-primary text-uppercase small mb-2">
               Establecimiento
             </span>
 
             <h2 class="card-title h3 fw-bold mb-1">
-              {{ establecimiento.nombre }}
+              {{ establecimiento.establecimiento }}
             </h2>
 
             <p class="mb-0 text-white-50 small">
@@ -53,11 +47,7 @@
             </p>
           </div>
 
-          <button
-            type="button"
-            class="btn btn-outline-light btn-sm rounded-pill ms-3"
-            (click)="volver()"
-          >
+          <button type="button" class="btn btn-outline-light btn-sm rounded-pill ms-3" (click)="volver()">
             <i class="bi bi-arrow-left me-1"></i>
             Volver
           </button>
@@ -117,22 +107,14 @@
             </div>
           </div>
 
-          <!-- Placeholder de mapa -->
-          <div class="mt-4">
-            <div
-              class="map-placeholder w-100 rounded-3"
-              style="height: 250px;"
-            >
-              <div class="text-center text-muted small py-5">
-                <i class="bi bi-map fs-2 d-block mb-2"></i>
-                <span>Mapa del lugar (próximamente)</span>
-              </div>
-            </div>
+          <!-- Mapa del evento -->
+          <div *ngIf="establecimiento?.direccion" style="margin-top: 20px;">
+            <h3>Ubicación del evento</h3>
+            <div id="map" style="height: 400px; border-radius: 10px;"></div>
           </div>
 
         </div>
       </div>
-
     </div>
   </div>
 </div>
