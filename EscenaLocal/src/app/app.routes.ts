@@ -14,11 +14,17 @@ import { RoleGuard } from './role.guard';
 import { LoginFormArtProdComponent } from './components/login-form-art-prod/login-form-art-prod.component';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
 import { UserEditComponent } from './components/user-edit/user-edit.component';
+import { TerminosCondicionesComponent } from './components/terminos-condiciones/terminos-condiciones.component';
+import { PoliticaPrivacidadComponent } from './components/politica-privacidad/politica-privacidad.component';
+import { AyudaComponent } from './components/ayuda/ayuda.component';
+
 
 export const routes: Routes = [
   
   { path: '', redirectTo: '/eventos', pathMatch: 'full' },
   { path: 'eventos', component: EventListComponent },
+  { path: 'eventos/productor/:id', component: EventListComponent},
+  { path: 'eventos/artista/:id', component: EventListComponent },
   { path: 'eventos/nuevo', component: EventFormComponent, canActivate: [RoleGuard],
     data: { role: 'ROL_PRODUCTOR' }},
   { path: 'evento/:id', component: EventViewComponent },
@@ -35,6 +41,9 @@ export const routes: Routes = [
   { path: 'login/art-prod/nuevo', component: LoginFormArtProdComponent},
   { path: 'perfil', component: UserProfileComponent},
   { path: 'perfil/editar', component: UserEditComponent},
+  { path: 'terminos-condiciones', component: TerminosCondicionesComponent},
+  { path: 'politica-privacidad', component: PoliticaPrivacidadComponent},
+  { path: 'ayuda', component: AyudaComponent},
   { path: '**', redirectTo: '/eventos' }
   
 ];

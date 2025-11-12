@@ -4,11 +4,8 @@ import { CommonModule } from '@angular/common';
 import { EventSearchComponent } from '../event-search/event-search.component';
 import { AuthService } from '../../services/auth.service';
 import { UsuarioService } from '../../services/usuario.service';
-<<<<<<< HEAD
 import { Subscription } from 'rxjs';
-=======
 import { NotificacionService, Notificacion } from '../../services/notificacion.service';
->>>>>>> backup-previo-pull
 
 @Component({
   selector: 'app-navbar',
@@ -17,23 +14,18 @@ import { NotificacionService, Notificacion } from '../../services/notificacion.s
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
 })
-<<<<<<< HEAD
 export class NavbarComponent implements OnInit, OnDestroy {
   imagenUrl: string = 'assets/img/usuario.png'; // imagen por defecto
   private subs: Subscription[] = [];
   private objectUrlToRevoke: string | null = null;
-=======
-export class NavbarComponent {
-  imagenUrl: string = 'assets/img/usuario.png';
   unreadCount: number = 0;
   notificaciones: Notificacion[] = [];
->>>>>>> backup-previo-pull
 
   constructor(
     private router: Router,
     private usuarioService: UsuarioService,
-<<<<<<< HEAD
-    private authService: AuthService
+    private authService: AuthService,
+    private notificacionService: NotificacionService
   ) {}
 
   ngOnInit(): void {
@@ -61,33 +53,7 @@ export class NavbarComponent {
         }
       })
     );
-  }
 
-  private cargarImagenUsuario(): void {
-    const userId = this.authService.getUserId();
-    if (!userId) return;
-
-    this.usuarioService.obtenerImagen(userId).subscribe({
-      next: (blob) => {
-        if (this.objectUrlToRevoke) {
-          URL.revokeObjectURL(this.objectUrlToRevoke);
-        }
-        const objectURL = URL.createObjectURL(blob);
-        this.imagenUrl = objectURL;
-        this.objectUrlToRevoke = objectURL;
-
-        // También actualizamos el avatar en el AuthService para compartirlo con otros componentes
-        this.authService.setAvatar(objectURL);
-      },
-      error: () => {
-        this.imagenUrl = 'assets/img/usuario.png';
-      },
-    });
-=======
-    private notificacionService: NotificacionService
-  ) {}
-
-  ngOnInit() {
     const usuarioId = Number(localStorage.getItem('usuarioId'));
 
     // Cargar imagen de usuario
@@ -113,16 +79,34 @@ export class NavbarComponent {
         error: (err) => console.error('Error al cargar notificaciones:', err),
       });
     }
->>>>>>> backup-previo-pull
   }
+
+  private cargarImagenUsuario(): void {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+
+    this.usuarioService.obtenerImagen(userId).subscribe({
+      next: (blob) => {
+        if (this.objectUrlToRevoke) {
+          URL.revokeObjectURL(this.objectUrlToRevoke);
+        }
+        const objectURL = URL.createObjectURL(blob);
+        this.imagenUrl = objectURL;
+        this.objectUrlToRevoke = objectURL;
+
+        // También actualizamos el avatar en el AuthService para compartirlo con otros componentes
+        this.authService.setAvatar(objectURL);
+      },
+      error: () => {
+        this.imagenUrl = 'assets/img/usuario.png';
+      },
+    });
+  }
+
 
   // Verifica si hay token guardado
   isLoggedIn(): boolean {
-<<<<<<< HEAD
     return this.authService.isLoggedIn();
-=======
-    return !!localStorage.getItem('jwt') || !!localStorage.getItem('token');
->>>>>>> backup-previo-pull
   }
 
   // Redirige al login
@@ -132,14 +116,8 @@ export class NavbarComponent {
 
   // Cierra sesión
   cerrarSesion(): void {
-<<<<<<< HEAD
     this.authService.logout();
     this.imagenUrl = 'assets/img/usuario.png';
-=======
-    localStorage.removeItem('jwt');
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuarioId');
->>>>>>> backup-previo-pull
     this.router.navigate(['/login']);
     this.notificaciones = [];
     this.unreadCount = 0;

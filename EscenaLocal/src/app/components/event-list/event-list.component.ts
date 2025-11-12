@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { EventService, EventGet, FiltrosEvento } from '../../services/event.service';
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-event-list',
@@ -15,31 +15,57 @@ export class EventListComponent implements OnInit, OnDestroy {
   events: EventGet[] = [];
   todosLosEventos: EventGet[] = [];
   apiBase = 'http://localhost:8080';
-  
-  // NUEVO: Variables para controlar el mensaje
+
+  // control de filtros
   hayFiltrosActivos = false;
   filtroActual: FiltrosEvento = { busqueda: '', provincia: '' };
-  
+
+  // para saber si estamos viendo eventos de un productor o de un artista
+  vistaPorProductor = false;
+  vistaPorArtista = false;
+  idPersona!: number;
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private eventService: EventService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
-    this.cargarEventos();
+    // 1) vemos qué ruta es
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      const path = this.route.snapshot.routeConfig?.path || '';
 
+      this.vistaPorProductor = path.includes('productor');
+      this.vistaPorArtista = path.includes('artista');
+
+      if (id) {
+        this.idPersona = Number(id);
+      }
+
+      // según el tipo de ruta, cargamos de un lado u otro
+      if (this.vistaPorProductor && this.idPersona) {
+        this.cargarEventosPorProductor(this.idPersona);
+      } else if (this.vistaPorArtista && this.idPersona) {
+        this.cargarEventosPorArtista(this.idPersona);
+      } else {
+        // ruta /eventos normal
+        this.cargarEventos();
+      }
+    });
+
+    // 2) escuchamos cambios de filtros (esto sigue igual)
     this.eventService.filtros$
       .pipe(takeUntil(this.destroy$))
       .subscribe(filtros => {
-        // Guardar filtros actuales
         this.filtroActual = filtros;
-        
-        // Determinar si hay filtros activos
         this.hayFiltrosActivos = !!(filtros.busqueda || filtros.provincia);
-        
-        if (this.todosLosEventos.length > 0) {
+
+        // solo filtramos cuando tenemos listado base
+        if (this.todosLosEventos.length > 0 && !this.vistaPorProductor && !this.vistaPorArtista) {
           this.filtrarEventos(filtros.busqueda, filtros.provincia);
         }
       });
@@ -50,12 +76,17 @@ export class EventListComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // ======================
+  // CARGAS
+  // ======================
+
+  // lista general
   cargarEventos(): void {
     this.eventService.getEvents().subscribe({
       next: (data) => {
         this.todosLosEventos = data;
         this.events = data;
-        
+
         const filtrosActuales = this.eventService.getFiltrosActuales?.() || { busqueda: '', provincia: '' };
         if (filtrosActuales.busqueda || filtrosActuales.provincia) {
           this.filtrarEventos(filtrosActuales.busqueda, filtrosActuales.provincia);
@@ -68,6 +99,39 @@ export class EventListComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  // lista por productor
+  private cargarEventosPorProductor(productorId: number): void {
+    this.eventService.getEventsByProductor(productorId).subscribe({
+      next: (data) => {
+        // en este caso NO aplicamos los filtros globales porque ya viene filtrado por productor
+        this.events = data;
+        this.todosLosEventos = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar eventos del productor:', err);
+        this.events = [];
+      }
+    });
+  }
+
+  // lista por artista
+  private cargarEventosPorArtista(artistaId: number): void {
+    this.eventService.getEventsByArtista(artistaId).subscribe({
+      next: (data) => {
+        this.events = data;
+        this.todosLosEventos = data;
+      },
+      error: (err) => {
+        console.error('Error al cargar eventos del artista:', err);
+        this.events = [];
+      }
+    });
+  }
+
+  // ======================
+  // FILTROS
+  // ======================
 
   private filtrarEventos(busqueda: string, provincia: string): void {
     if (!this.todosLosEventos || this.todosLosEventos.length === 0) {

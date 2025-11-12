@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UsuarioService } from '../../services/usuario.service';
 import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-profile',
@@ -10,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './user-profile.component.html',
 })
 export class UserProfileComponent implements OnInit {
+
   usuario: any = null;
   loading = true;
   error = '';
@@ -17,7 +19,8 @@ export class UserProfileComponent implements OnInit {
 
   constructor(
     private usuarioService: UsuarioService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -51,4 +54,27 @@ export class UserProfileComponent implements OnInit {
   esProductor(): boolean {
     return this.usuario?.rol === 'ROL_PRODUCTOR';
   }
+
+  editarPerfil() {
+    this.router.navigate(['/perfil/editar']);
+  }
+
+  crearEvento() {
+    this.router.navigate(['/eventos/nuevo']);
+  }
+
+  verEventos(): void {
+  const userId = this.authService.getUserId();
+  if (!userId || !this.usuario) return;
+
+  if (this.esProductor()) {
+    this.router.navigate([`/eventos/productor/${userId}`]);
+  } else if (this.esArtista()) {
+    this.router.navigate([`/eventos/artista/${userId}`]);
+  } else {
+    // opcional: si es un usuario normal sin rol especial
+    this.router.navigate(['/eventos']);
+  }
+}
+
 }

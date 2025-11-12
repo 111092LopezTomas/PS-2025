@@ -1,4 +1,6 @@
 <app-navbar></app-navbar>
+
+<!-- Carrusel -->
 <div id="carouselExample" class="carousel slide" data-bs-ride="carousel" style="margin-top: 20px;">
   <div class="carousel-inner">
     <div class="carousel-item active">
@@ -13,47 +15,81 @@
   </div>
   <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
+    <span class="visually-hidden">Anterior</span>
   </button>
   <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
     <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
+    <span class="visually-hidden">Siguiente</span>
   </button>
 </div>
+
 <router-outlet></router-outlet>
+
+<!-- Footer -->
 <footer class="footer-colorido text-white pt-4">
   <div class="container">
     <div class="row align-items-center">
-
-      <!-- Enlaces centro -->
+      
+      <!-- Columna izquierda -->
       <div class="col-md-6 text-center mb-3 mb-md-0">
-        <!-- Imagen centrada -->
         <img src="assets/img/logo.png" alt="Imagen Central" width="80" class="d-block mx-auto mb-2">
 
-        <p class="mb-1"><a href="#" class="text-white text-decoration-none">¿Sos artista o tenés una productora?</a>
+        <p class="mb-1">
+          <a href="#" class="text-white text-decoration-none">¿Sos artista o tenés una productora?</a>
         </p>
-        <p class="mb-1"><a href="#" class="text-white text-decoration-none">Vendé tus entradas con Escena
-            Local</a></p>
-        <p class="mb-1"><a href="#" class="text-white text-decoration-none">Redes</a></p>
+        <p class="mb-1">
+          <a href="#" class="text-white text-decoration-none">Vendé tus entradas con Escena Local</a>
+        </p>
+        <p class="mb-1">
+          <a href="#" class="text-white text-decoration-none">Seguinos en redes</a>
+        </p>
 
         <!-- Redes sociales -->
         <div class="mt-2">
-          <a href="#" class="btn btn-f btn-sm me-1"><i class="bi bi-facebook"></i> F</a>
-          <a href="#" class="btn btn-ig btn-sm"><i class="bi bi-instagram"></i> IG</a>
+          <a href="#" class="btn btn-f btn-sm me-1">
+            <i class="bi bi-facebook"></i> F
+          </a>
+          <a href="#" class="btn btn-ig btn-sm">
+            <i class="bi bi-instagram"></i> IG
+          </a>
         </div>
       </div>
-      <div class="col-md-6 d-flex flex-column align-items-center mb-3 mb-md-0 " style="height: 180px;">
 
-        <!-- Imagen centrada -->
-        <img src="assets/img/mercadopago.png" alt="Imagen Central" width="200" class="d-block mx-auto mb-2">
+      <!-- Columna derecha -->
+      <div class="col-md-6 d-flex flex-column align-items-center mb-3 mb-md-0" style="height: 180px;">
+        <img src="assets/img/mercadopago.png" alt="Mercado Pago" width="200" class="d-block mx-auto mb-2">
       </div>
     </div>
+
     <hr class="border-secondary my-3">
 
-    <!-- Pie de página -->
+    <!-- Enlaces centrales -->
     <div class="row">
       <div class="col text-center">
-        <small>© Escena Local - PS Tecnicatura En Programación UTN</small>
+        <ul class="list-inline mb-2">
+          <li class="list-inline-item mx-2">
+            <a routerLink="/terminos-condiciones" class="text-white text-decoration-none">
+              <i class="bi bi-file-earmark-text"></i> Términos y Condiciones
+            </a>
+          </li>
+          <li class="list-inline-item mx-2">
+            <a routerLink="/politica-privacidad" class="text-white text-decoration-none">
+              <i class="bi bi-shield-lock"></i> Política de Privacidad
+            </a>
+          </li>
+          <li class="list-inline-item mx-2">
+            <a routerLink="/ayuda" class="text-white text-decoration-none">
+              <i class="bi bi-question-circle"></i> Ayuda
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Pie final -->
+    <div class="row">
+      <div class="col text-center">
+        <small>© Escena Local - PS Tecnicatura en Programación UTN</small>
       </div>
     </div>
   </div>

@@ -23,6 +23,7 @@ public class GetEventoDto {
   List<String> artistas;
   List<GetEntradaDto> entradasDetalle;
   String clasificacion;
+  Long productorId;
   String productor;
   Long establecimientoId;
   String establecimiento;

@@ -197,4 +197,12 @@ export class EventService {
   getEventosByEstablecimiento(id: number): Observable<EventGet> {
     return this.http.get<EventGet>(`${this.apiUrl}/eventos/establecimientos/${id}`);
   }
+
+  getEventsByProductor(id: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/eventos/productores/${id}`);
+}
+
+getEventsByArtista(id: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/eventos/artistas/${id}`);
+}
 }

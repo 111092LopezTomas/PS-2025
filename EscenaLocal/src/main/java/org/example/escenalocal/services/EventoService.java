@@ -26,4 +26,8 @@ public interface EventoService {
   void eliminarImagen(Long id);
 
   List<GetEventoDto> getEventosByEstablecimientoId(@PathVariable Long id);
+
+  List<GetEventoDto> getEventosByArtistaId(@PathVariable Long id);
+
+  List<GetEventoDto> getEventosByProductorId(@PathVariable Long id);
 }

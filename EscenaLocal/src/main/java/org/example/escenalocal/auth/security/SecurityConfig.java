@@ -58,7 +58,8 @@ public class SecurityConfig {
           "/entradas/**",
           "/productores/**",
           "/webjars/**",
-        "/payments/create-preference/**").permitAll()
+        "/payments/create-preference/**",
+          "/api/notificaciones").permitAll()
         .anyRequest().authenticated()
       )
       .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)

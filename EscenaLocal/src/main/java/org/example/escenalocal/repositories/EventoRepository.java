@@ -69,4 +69,50 @@ public interface EventoRepository extends ListCrudRepository<EventoEntity, Long>
       order by e.fecha desc
 """)
   List<EventoEntity> findActivosByEstablecimientoId(@Param("establecimientoId") Long establecimientoId);
+
+  @EntityGraph(attributePaths = {
+    "clasificacion",
+    "establecimiento",
+    "productor",
+    "imagenDatos",
+    "establecimiento.capacidad",
+    "establecimiento.barrio",
+    "establecimiento.barrio.ciudad",
+    "establecimiento.barrio.ciudad.provincia",
+    "artistasEvento.artista",
+    "eventoTiposEntrada.tiposEntrada"
+  })
+  @Query("""
+  select distinct e
+  from EventoEntity e
+  join e.artistasEvento ae
+  where e.activo = true
+    and ae.artista.id = :artistaId
+  order by e.fecha desc
+""")
+  List<EventoEntity> findActivosByArtistaId(@Param("artistaId") Long artistaId);
+
+  @EntityGraph(attributePaths = {
+    "clasificacion",
+    "establecimiento",
+    "productor",
+    "imagenDatos",
+    "establecimiento.id",
+    "establecimiento.capacidad",
+    "establecimiento.barrio",
+    "establecimiento.barrio.ciudad",
+    "establecimiento.barrio.ciudad.provincia",
+    "artistasEvento.artista",
+    "eventoTiposEntrada.tiposEntrada"
+  })
+  @Query("""
+  select distinct e
+  from EventoEntity e
+  where e.activo = true
+    and e.productor.id = :productorId
+  order by e.fecha desc
+""")
+  List<EventoEntity> findActivosByProductorId(@Param("productorId") Long productorId);
+
+
 }
