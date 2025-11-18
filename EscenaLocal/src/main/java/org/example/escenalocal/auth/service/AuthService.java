@@ -127,4 +127,25 @@ public class AuthService {
 
     return list;
   }
+
+  public void cambiarPassword(ChangePasswordRequest req, String username) {
+
+    // Buscar usuario por username autenticado
+    UsuarioEntity user = userRepo.findByUsername(username)
+      .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    // Verificar contraseña actual
+    if (!passwordEncoder.matches(req.getActual(), user.getPassword())) {
+      throw new RuntimeException("La contraseña actual es incorrecta");
+    }
+
+    // Validar nueva contraseña (opcional)
+    if (req.getNueva().length() < 6) {
+      throw new RuntimeException("La nueva contraseña debe tener al menos 6 caracteres");
+    }
+
+    // Actualizar y guardar nueva contraseña
+    user.setPassword(passwordEncoder.encode(req.getNueva()));
+    userRepo.save(user);
+  }
 }

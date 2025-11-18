@@ -27,13 +27,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getServletPath();
-    // 👇 Estas rutas NO pasan por el filtro JWT
-    return path.startsWith("/auth")
-      || path.startsWith("/swagger-ui")
-      || path.startsWith("/v3/api-docs")
-      || path.startsWith("/h2-console")
-      || path.startsWith("/swagger-resources")
-      || path.startsWith("/webjars");
+
+    List<String> publicPaths = List.of(
+      "/auth/login",
+      "/auth/register",
+      "/auth/reset-password",
+      "/auth/confirm-reset",
+      "/swagger-ui",
+      "/v3/api-docs",
+      "/h2-console",
+      "/swagger-resources",
+      "/webjars"
+    );
+
+    // Si el path empieza por alguna ruta pública → NO aplicar JWT
+    return publicPaths.stream().anyMatch(path::startsWith);
   }
 
   @Override
@@ -48,10 +56,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String header = request.getHeader("Authorization");
     System.out.println("Header: " + header);
 
+    // Si hay token → procesarlo
     if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+
       String token = header.substring(7);
+
       try {
         if (jwtUtil.validateToken(token)) {
+
           String username = jwtUtil.extractUsername(token);
           UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -61,6 +73,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
               null,
               userDetails.getAuthorities()
             );
+
           SecurityContextHolder.getContext().setAuthentication(authentication);
         }
       } catch (Exception e) {

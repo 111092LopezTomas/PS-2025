@@ -18,6 +18,7 @@ import { PoliticaPrivacidadComponent } from './components/politica-privacidad/po
 import { AyudaComponent } from './components/ayuda/ayuda.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { ChangePasswordComponent } from './components/change-password/change-password.component';
 
 
 export const routes: Routes = [
@@ -47,6 +48,7 @@ export const routes: Routes = [
   { path: 'ayuda', component: AyudaComponent},
   { path: 'forgot-password', component: ForgotPasswordComponent},
   { path: 'reset-password', component: ResetPasswordComponent},
+  { path: 'change-password', component: ChangePasswordComponent},
   { path: '**', redirectTo: '/eventos' }
 
 ];

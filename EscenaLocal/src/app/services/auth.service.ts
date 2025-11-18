@@ -233,11 +233,13 @@ export class AuthService {
 
   resetPassword(token: string, newPassword: string) {
     console.log('Frontend envía token:', token);
-  return this.http.post(
-    `${this.apiUrl}/reset-password`,
-    { token, newPassword }
+  return this.http.post(`${this.apiUrl}/reset-password`,{ token, newPassword }
   );
   }
+
+  cambiarPassword(data: { actual: string; nueva: string }) {
+  return this.http.put(`${this.apiUrl}/change-password`, data);
+}
 }
 
 

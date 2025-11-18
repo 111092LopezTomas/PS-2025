@@ -1,6 +1,5 @@
 package org.example.escenalocal.auth.controller;
 
-import jakarta.mail.MessagingException;
 import org.example.escenalocal.auth.dtos.*;
 import org.example.escenalocal.auth.repository.RolRepository;
 import org.example.escenalocal.auth.repository.UserRepository;
@@ -17,10 +16,10 @@ import org.example.escenalocal.services.PasswordResetService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Map;
@@ -289,4 +288,14 @@ public class AuthController {
         .body(Map.of("message", "Ocurrió un error al actualizar la contraseña."));
     }
   }
+
+  @PutMapping("/change-password")
+  public ResponseEntity<?> cambiarPassword(@RequestBody ChangePasswordRequest req, Authentication authentication) {
+
+    String username = authentication.getName();
+    authService.cambiarPassword(req, username);
+
+    return ResponseEntity.ok(new MessageResponse("Contraseña actualizada correctamente"));
+  }
+
 }
