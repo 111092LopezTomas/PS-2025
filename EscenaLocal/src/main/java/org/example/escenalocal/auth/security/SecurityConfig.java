@@ -36,19 +36,25 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-      .csrf(csrf -> csrf.disable()) // Nueva sintaxis
+      .csrf(csrf -> csrf.disable())
       .cors(cors -> cors.configurationSource(corsConfigurationSource()))
       .sessionManagement(session -> session
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
       )
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers( "/auth/**",
-          "/auth/login",
+        .requestMatchers("/auth/**").permitAll()
+
+        // Swagger / H2 públicos si los usás
+        .requestMatchers(
           "/h2-console/**",
           "/swagger-ui/**",
           "/v3/api-docs/**",
           "/v3/api-docs.yaml",
           "/swagger-resources/**",
+          "/webjars/**"
+        ).permitAll()
+
+        .requestMatchers(
           "/artistas/**",
           "/provincias/**",
           "/eventos/**",
@@ -57,13 +63,15 @@ public class SecurityConfig {
           "/clasificaciones/**",
           "/entradas/**",
           "/productores/**",
-          "/webjars/**",
-        "/payments/create-preference/**",
-          "/api/notificaciones").permitAll()
+          "/payments/create-preference/**",
+          "/api/notificaciones"
+        ).permitAll()
+
+        // Cualquier otra cosa requiere estar autenticado
         .anyRequest().authenticated()
       )
       .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-      .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())); // para H2
+      .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())); // H2
 
     return http.build();
   }
@@ -75,6 +83,7 @@ public class SecurityConfig {
     configuration.addAllowedMethod("*");
     configuration.addAllowedHeader("*");
     configuration.setAllowCredentials(true);
+
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;

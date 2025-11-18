@@ -6,7 +6,6 @@ import { CheckoutComponent } from './components/checkout/checkout.component';
 import { AuthGuard } from './guards/auth.guard';
 import { LoginComponent } from './components/login/login.component';
 import { LoginFormComponent } from './components/login-form/login-form.component';
-
 import { EventUpdateComponent } from './components/event-update/event-update.component';
 import { EstablishmentComponent } from './components/establishment/establishment.component';
 import { LoginArtProdComponent } from './components/login-art-prod/login-art-prod.component';
@@ -17,6 +16,8 @@ import { UserEditComponent } from './components/user-edit/user-edit.component';
 import { TerminosCondicionesComponent } from './components/terminos-condiciones/terminos-condiciones.component';
 import { PoliticaPrivacidadComponent } from './components/politica-privacidad/politica-privacidad.component';
 import { AyudaComponent } from './components/ayuda/ayuda.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 
 
 export const routes: Routes = [
@@ -44,6 +45,8 @@ export const routes: Routes = [
   { path: 'terminos-condiciones', component: TerminosCondicionesComponent},
   { path: 'politica-privacidad', component: PoliticaPrivacidadComponent},
   { path: 'ayuda', component: AyudaComponent},
+  { path: 'forgot-password', component: ForgotPasswordComponent},
+  { path: 'reset-password', component: ResetPasswordComponent},
   { path: '**', redirectTo: '/eventos' }
-  
+
 ];

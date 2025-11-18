@@ -11,6 +11,7 @@
       <div class="mb-3">
         <label class="form-label">Contraseña</label>
         <input type="password" name="password" [(ngModel)]="model.password" required class="form-control" />
+        <a routerLink="/forgot-password" class="small">¿Olvidaste tu contraseña?</a>
       </div>
 
       <button class="btn-orange" [disabled]="loginForm.invalid">Ingresar</button>

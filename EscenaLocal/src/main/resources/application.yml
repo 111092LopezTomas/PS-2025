@@ -6,6 +6,11 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: 470f26fce7817e
+    password: 5a74250b2a0cfb
 
 
   jpa:
