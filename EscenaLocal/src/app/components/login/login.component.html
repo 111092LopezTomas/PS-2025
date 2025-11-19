@@ -24,6 +24,12 @@
         Registrarme
       </a>
     </div>
+    <div class="text-center mt-3">
+      <span>Si sos artista o productor</span>
+      <a class="text-primary fw-bold" routerLink="/login/art-prod" style="cursor: pointer;">
+        Login
+      </a>
+    </div>
 
     <div *ngIf="error" class="alert alert-danger mt-2">{{ error }}</div>
   </div>
