@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,7 +76,12 @@ public class MercadoPagoGateway implements PaymentGateway {
     var builder = PreferenceRequest.builder()
       .items(items)
       .backUrls(back)
-      .externalReference(cmd.externalReference());
+      .externalReference(cmd.externalReference())
+      .metadata(Map.of(
+
+        "tipoEntradaId", cmd.items().get(0).id(),
+        "cantidad", cmd.items().get(0).quantity()
+      ));
 
     if (b.startsWith("https://")) {
       builder.autoReturn("approved");

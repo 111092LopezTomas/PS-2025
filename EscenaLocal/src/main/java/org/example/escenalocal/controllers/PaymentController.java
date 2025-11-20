@@ -70,13 +70,17 @@ public class PaymentController {
 
     var cmd = new CreatePrefCommand(
       "EVT-" + eventId,
+      null,
+      eventId,
       List.of(new CreatePrefCommand.Item(
         String.valueOf(eventId),
-        "Entrada", "Show",
+        "Entrada",
+        "Show",
         qty,
         precio
       ))
     );
+
 
     var r = gateway.createPreferenceWithBase(cmd, base);
     return Map.of("preferenceId", r.preferenceId(), "initPoint", r.initPoint());

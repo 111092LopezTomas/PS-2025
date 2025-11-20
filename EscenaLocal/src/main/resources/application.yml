@@ -6,6 +6,11 @@ spring:
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: 470f26fce7817e
+    password: 5a74250b2a0cfb
 
 
   jpa:
@@ -45,3 +50,5 @@ mercadopago:
   access-token: TEST-322033363091622-101020-39222800df17823accd071f661d894bb-1465029993
   webhook-secret: ${MP_WEBHOOK_SECRET:TEST-SECRET}
   enable-webhook: false
+
+
