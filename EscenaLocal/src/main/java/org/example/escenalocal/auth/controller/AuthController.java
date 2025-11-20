@@ -12,13 +12,17 @@ import org.example.escenalocal.entities.*;
 import org.example.escenalocal.repositories.ArtistaRepository;
 import org.example.escenalocal.repositories.GeneroRepository;
 import org.example.escenalocal.repositories.ProductorRepository;
+import org.example.escenalocal.services.PasswordResetService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -32,6 +36,7 @@ public class AuthController {
   private final ProductorRepository productorRepo;
   private final GeneroRepository generoRepo;
   private final JwtUtil jwtUtil;
+  private final PasswordResetService passwordResetService;
 
   public AuthController(AuthService authService,
                         UserRepository userRepo,
@@ -40,7 +45,7 @@ public class AuthController {
                         ArtistaRepository artistaRepo,
                         ProductorRepository productorRepo,
                         GeneroRepository generoRepo,
-                        JwtUtil jwtUtil) {
+                        JwtUtil jwtUtil, PasswordResetService passwordResetService) {
     this.authService = authService;
     this.userRepo = userRepo;
     this.rolRepository = rolRepository;
@@ -49,6 +54,7 @@ public class AuthController {
     this.productorRepo = productorRepo;
     this.generoRepo = generoRepo;
     this.jwtUtil = jwtUtil;
+    this.passwordResetService = passwordResetService;
   }
 
   @PostMapping("/login")
@@ -100,13 +106,6 @@ public class AuthController {
     return ResponseEntity.ok(list);
   }
 
-//  @GetMapping("/usuarios/{id}")
-//  public ResponseEntity<UsuarioEntity> obtenerUsuario(@PathVariable Long id) {
-//    UsuarioEntity usuario = userRepo.findById(id)
-//      .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-//    return ResponseEntity.ok(usuario);
-//  }
-
   @GetMapping("/usuarios/{id}")
   public ResponseEntity<GetArtProdDto> obtenerUsuario(@PathVariable Long id) {
     UsuarioEntity usuario = userRepo.findById(id)
@@ -146,9 +145,6 @@ public class AuthController {
 
     return ResponseEntity.ok(dto);
   }
-
-
-
 
   @PostMapping("register/art-prod")
   public ResponseEntity<AuthResponse> registrar(@RequestBody PostArtProdDto req) {
@@ -251,4 +247,55 @@ public class AuthController {
 
     return ResponseEntity.ok().build();
   }
+
+  @PostMapping("/forgot-password")
+  public ResponseEntity<Map<String, String>> forgotPassword(
+    @RequestBody ForgotPasswordRequest request) {
+
+    System.out.println("FORGOT-PASSWORD email = " + request.getEmail());
+
+    try {
+      passwordResetService.requestPasswordReset(request.getEmail());
+      return ResponseEntity.ok(
+        Map.of("message", "Si el correo está registrado, te enviaremos instrucciones.")
+      );
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(Map.of("message", "Hubo un problema al procesar la solicitud."));
+    }
+  }
+
+  @PostMapping("/reset-password")
+  public ResponseEntity<Map<String, String>> resetPassword(
+    @RequestBody ResetPasswordRequest request) {
+
+    System.out.println("TOKEN RECIBIDO EN BACK: " + request.getToken());
+    System.out.println("NEW PASSWORD RECIBIDA: " + request.getNewPassword());
+
+    try {
+      passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
+      return ResponseEntity.ok(
+        Map.of("message", "Contraseña actualizada correctamente.")
+      );
+    } catch (IllegalArgumentException e) {
+      return ResponseEntity.badRequest().body(
+        Map.of("message", e.getMessage())
+      );
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(Map.of("message", "Ocurrió un error al actualizar la contraseña."));
+    }
+  }
+
+  @PutMapping("/change-password")
+  public ResponseEntity<?> cambiarPassword(@RequestBody ChangePasswordRequest req, Authentication authentication) {
+
+    String username = authentication.getName();
+    authService.cambiarPassword(req, username);
+
+    return ResponseEntity.ok(new MessageResponse("Contraseña actualizada correctamente"));
+  }
+
 }

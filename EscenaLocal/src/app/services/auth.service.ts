@@ -223,6 +223,23 @@ export class AuthService {
     const userRol = this.getUserRoleFromToken();
     return userRol === rol;
   }
+
+  requestPasswordReset(email: string): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}/forgot-password`,
+      { email: email }
+    );
+  }
+
+  resetPassword(token: string, newPassword: string) {
+    console.log('Frontend envía token:', token);
+  return this.http.post(`${this.apiUrl}/reset-password`,{ token, newPassword }
+  );
+  }
+
+  cambiarPassword(data: { actual: string; nueva: string }) {
+  return this.http.put(`${this.apiUrl}/change-password`, data);
+}
 }
 
 

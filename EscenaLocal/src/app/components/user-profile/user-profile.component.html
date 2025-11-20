@@ -97,6 +97,10 @@
         <i class="bi bi-pencil-square"></i> Editar perfil
       </button>
 
+      <button class="btn btn-outline-primary" [routerLink]="['/change-password']">
+        <i class="bi bi-pencil-square"></i>Cambiar contraseña
+      </button>
+
       <!-- Botón Crear evento (solo productor) -->
       <button
         *ngIf="esProductor()"
