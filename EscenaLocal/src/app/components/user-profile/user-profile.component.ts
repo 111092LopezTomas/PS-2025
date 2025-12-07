@@ -13,6 +13,8 @@ import { Router, RouterLink } from '@angular/router';
 export class UserProfileComponent implements OnInit {
 
   usuario: any = null;
+  idArtista: number | null = null;
+  idProductor: number | null = null;
   loading = true;
   error = '';
   imagenUrl: string | null = null;
@@ -24,7 +26,6 @@ export class UserProfileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // sacamos el id del localStorage (lo guardamos en el login)
     const id = this.authService.getUserId();
     if (!id) {
       this.error = 'No se pudo obtener el usuario actual.';
@@ -35,15 +36,20 @@ export class UserProfileComponent implements OnInit {
     this.usuarioService.getUsuarioById(id).subscribe({
       next: (u) => {
         this.usuario = u;
-        // si tu back sirve la imagen en /auth/{id}/imagen
+
+        // 🔹 Cargar IDs desde el DTO
+        this.idArtista = u.idArtista ?? null;
+        this.idProductor = u.idProductor ?? null;
+
+        // 🔹 Cargar imagen si tu backend lo expone así
         this.imagenUrl = `http://localhost:8080/auth/${u.id}/imagen`;
+
         this.loading = false;
       },
-      error: (err) => {
-        console.error(err);
+      error: () => {
         this.error = 'No se pudo cargar el perfil';
         this.loading = false;
-      },
+      }
     });
   }
 
@@ -64,17 +70,17 @@ export class UserProfileComponent implements OnInit {
   }
 
   verEventos(): void {
-  const userId = this.authService.getUserId();
-  if (!userId || !this.usuario) return;
+    if (!this.usuario) return;
 
-  if (this.esProductor()) {
-    this.router.navigate([`/eventos/productor/${userId}`]);
-  } else if (this.esArtista()) {
-    this.router.navigate([`/eventos/artista/${userId}`]);
-  } else {
-    // opcional: si es un usuario normal sin rol especial
-    this.router.navigate(['/eventos']);
+    // 🔹 ahora usamos idArtista o idProductor del DTO
+    if (this.esProductor() && this.idProductor) {
+      this.router.navigate([`/eventos/productor/${this.idProductor}`]);
+
+    } else if (this.esArtista() && this.idArtista) {
+      this.router.navigate([`/eventos/artista/${this.idArtista}`]);
+
+    } else {
+      this.router.navigate(['/eventos']);
+    }
   }
-}
-
 }

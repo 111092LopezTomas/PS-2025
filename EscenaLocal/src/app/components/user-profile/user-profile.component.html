@@ -41,9 +41,18 @@
       <div>
         <h4 class="mb-0">{{ usuario.username }}</h4>
         <small class="text-muted">{{ usuario.email }}</small>
-        <div>
-          <span class="badge bg-info-subtle text-dark mt-1">
+        <div class="mt-1 d-flex flex-wrap gap-1">
+          <span class="badge bg-info-subtle text-dark">
             {{ usuario.rol }}
+          </span>
+
+          <!-- 🔹 IDs segun rol -->
+          <span *ngIf="esArtista()" class="badge bg-secondary">
+            Artista ID: {{ idArtista || '-' }}
+          </span>
+
+          <span *ngIf="esProductor()" class="badge bg-secondary">
+            Productor ID: {{ idProductor || '-' }}
           </span>
         </div>
       </div>
@@ -97,7 +106,10 @@
         <i class="bi bi-pencil-square"></i> Editar perfil
       </button>
 
-      <button class="btn btn-outline-primary" [routerLink]="['/change-password']">
+      <button
+        class="btn btn-outline-primary"
+        [routerLink]="['/change-password']"
+      >
         <i class="bi bi-pencil-square"></i>Cambiar contraseña
       </button>
 

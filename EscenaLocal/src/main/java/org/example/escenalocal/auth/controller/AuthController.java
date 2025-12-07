@@ -122,6 +122,7 @@ public class AuthController {
     // ARTISTA
     if ("ROL_ARTISTA".equals(rolNombre)) {
       artistaRepo.findByUsuario(usuario).ifPresent(artista -> {
+        dto.setIdArtista(artista.getId());
         dto.setNombre(artista.getNombre());
         dto.setRepresentante(artista.getRepresentante());
         dto.setTelefono_representante(artista.getTelefono_representante());
@@ -136,6 +137,7 @@ public class AuthController {
     // PRODUCTOR
     if ("ROL_PRODUCTOR".equals(rolNombre)) {
       productorRepo.findByUsuario(usuario).ifPresent(productor -> {
+        dto.setIdProductor(productor.getId());
         dto.setNombre(productor.getNombre());
         dto.setRepresentante(productor.getRepresentante());
         dto.setTelefono_representante(productor.getTelefono_representante());

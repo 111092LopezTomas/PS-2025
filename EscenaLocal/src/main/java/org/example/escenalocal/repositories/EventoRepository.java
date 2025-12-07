@@ -80,6 +80,7 @@ public interface EventoRepository extends ListCrudRepository<EventoEntity, Long>
     "establecimiento.barrio.ciudad",
     "establecimiento.barrio.ciudad.provincia",
     "artistasEvento.artista",
+    "artistasEvento.artista.id",
     "eventoTiposEntrada.tiposEntrada"
   })
   @Query("""
@@ -96,6 +97,7 @@ public interface EventoRepository extends ListCrudRepository<EventoEntity, Long>
     "clasificacion",
     "establecimiento",
     "productor",
+    "productor.id",
     "imagenDatos",
     "establecimiento.id",
     "establecimiento.capacidad",

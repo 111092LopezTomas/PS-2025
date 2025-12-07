@@ -11,6 +11,10 @@ public class GetArtProdDto {
 
     private Long id;
 
+    private Long idArtista;
+
+    private Long idProductor;
+
     private String nombre;
 
     private String representante;

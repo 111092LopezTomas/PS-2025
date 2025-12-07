@@ -155,7 +155,7 @@ public class EventoController {
 
   @GetMapping("/productores/{id}")
   public ResponseEntity<List<GetEventoDto>> getEventosByProductorId(@PathVariable Long id) {
-    List<GetEventoDto> eventosDtos = eventoService.getEventosByArtistaId(id);
+    List<GetEventoDto> eventosDtos = eventoService.getEventosByProductorId(id);
 
     return ResponseEntity.ok(eventosDtos);
   }
