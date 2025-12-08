@@ -37,7 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       "/v3/api-docs",
       "/h2-console",
       "/swagger-resources",
-      "/webjars"
+      "/webjars",
+      "/payments/webhook"
     );
 
     // Si el path empieza por alguna ruta pública → NO aplicar JWT

@@ -1,5 +1,5 @@
 export const environment = {
 production: false,
-apiBase: 'http://localhost:8080',
-mpPublicKey: 'TEST-322033363091622-101020-39222800df17823accd071f661d894bb-1465029993'
+apiBase: 'https://prospective-fesswise-haydee.ngrok-free.dev',
+mpPublicKey: 'TEST-4d19c6e3-1755-4fd7-bdd1-caafb85cb62e'
 };

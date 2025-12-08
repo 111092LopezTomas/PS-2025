@@ -1,12 +1,15 @@
 package org.example.escenalocal.controllers;
 
+import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
+import com.mercadopago.resources.payment.Payment;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.escenalocal.payments.CreatePrefCommand;
 import org.example.escenalocal.payments.PaymentGateway;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -85,5 +88,29 @@ public class PaymentController {
     var r = gateway.createPreferenceWithBase(cmd, base);
     return Map.of("preferenceId", r.preferenceId(), "initPoint", r.initPoint());
   }
+
+  @GetMapping("/debug/payment/{id}")
+  public ResponseEntity<?> debugPayment(@PathVariable Long id) {
+    try {
+      PaymentClient client = new PaymentClient();
+      Payment p = client.get(id);
+
+      System.out.println("🔍 DEBUG PAYMENT " + id);
+      System.out.println("status        = " + p.getStatus());
+      System.out.println("status_detail = " + p.getStatusDetail());
+      System.out.println("external_ref  = " + p.getExternalReference());
+
+      return ResponseEntity.ok(Map.of(
+        "id", p.getId(),
+        "status", p.getStatus(),
+        "status_detail", p.getStatusDetail(),
+        "external_reference", p.getExternalReference()
+      ));
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(404).body("Payment no encontrado o error: " + e.getMessage());
+    }
+  }
+
 }
 

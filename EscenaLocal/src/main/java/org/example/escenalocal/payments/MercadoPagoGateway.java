@@ -97,6 +97,11 @@ public class MercadoPagoGateway implements PaymentGateway {
     try {
       var client = new PreferenceClient();
       var pref = client.create(prefReq);
+
+      System.out.println("[MP] initPoint        = " + pref.getInitPoint());
+      System.out.println("[MP] sandboxInitPoint = " + pref.getSandboxInitPoint());
+      System.out.println("[MP] notificationUrl  = " + pref.getNotificationUrl());
+
       return new CreatePrefResult(pref.getId(), pref.getInitPoint());
     } catch (MPApiException e) {
       System.err.println("MPApiException status = " + e.getApiResponse().getStatusCode());
@@ -126,6 +131,11 @@ public class MercadoPagoGateway implements PaymentGateway {
     String b = (base == null || base.isBlank()) ? "http://localhost:8080" : base.trim();
     if (b.endsWith("/")) b = b.substring(0, b.length() - 1);
     System.out.println("[MP] baseUrl (req) = " + b);
+
+    if (b.startsWith("http://") && b.contains("ngrok")) {
+      b = "https://" + b.substring("http://".length());
+      System.out.println("[MP] baseUrl (fix) = " + b);
+    }
 
     // 2) Mapear ítems
 //    var items = cmd.items().stream().map(i ->
@@ -206,6 +216,11 @@ public class MercadoPagoGateway implements PaymentGateway {
     try {
       var client = new com.mercadopago.client.preference.PreferenceClient();
       var pref = client.create(prefReq);
+
+      System.out.println("[MP] PREFERENCE ID     = " + pref.getId());
+      System.out.println("[MP] initPoint         = " + pref.getInitPoint());
+      System.out.println("[MP] notification_url  = " + pref.getNotificationUrl());
+
       return new CreatePrefResult(pref.getId(), pref.getInitPoint());
     } catch (com.mercadopago.exceptions.MPApiException e) {
       System.err.println("MPApiException status = " + e.getApiResponse().getStatusCode());

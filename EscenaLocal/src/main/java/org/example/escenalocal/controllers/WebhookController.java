@@ -9,7 +9,6 @@ import org.example.escenalocal.repositories.VentaEntradaRepository;
 import org.example.escenalocal.repositories.EventoTiposEntradaRepository;
 import org.example.escenalocal.auth.repository.UserRepository;
 import org.example.escenalocal.services.MercadopagoService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +35,6 @@ public class WebhookController {
     System.out.println("Body raw     = " + bodyRaw);
 
     try {
-
       // 1️⃣ OBTENER payment_id (puede venir por query o body)
       Long paymentId = null;
 
@@ -50,11 +48,13 @@ public class WebhookController {
 
       if (paymentId == null && bodyRaw != null) {
         Map body = objectMapper.readValue(bodyRaw, Map.class);
-        if (body.containsKey("id"))
+        if (body.containsKey("id")) {
           paymentId = Long.valueOf(body.get("id").toString());
+        }
       }
 
       if (paymentId == null) {
+        System.out.println("⚠️ Webhook sin payment_id, devolviendo 200");
         return ResponseEntity.ok("No payment id");
       }
 
@@ -63,9 +63,18 @@ public class WebhookController {
       // 2️⃣ Obtener la info REAL del pago desde Mercado Pago
       PostPaymentInfoDto info = mercadopagoService.getPaymentInfo(paymentId);
 
+      // 👉 IMPORTANTE: puede ser null si MP respondió 404 (simulación con id inventado)
+      if (info == null) {
+        System.out.println("⚠️ No se obtuvo info de pago para id=" + paymentId +
+          " (probablemente Payment not found / simulación).");
+        // Igual devolvemos 200 para que MP no marque fallo ni reintente
+        return ResponseEntity.ok("Payment not found or error getting info");
+      }
+
       System.out.println("➡️ Estado del pago = " + info.getStatus());
 
       if (!"approved".equalsIgnoreCase(info.getStatus())) {
+        System.out.println("⚠️ Pago no aprobado, status=" + info.getStatus());
         return ResponseEntity.ok("Pago no aprobado");
       }
 
@@ -100,9 +109,9 @@ public class WebhookController {
 
     } catch (Exception e) {
       e.printStackTrace();
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body("Error: " + e.getMessage());
+
+      System.out.println("⚠️ Error interno al procesar webhook: " + e.getMessage());
+      return ResponseEntity.ok("Error interno procesando webhook");
     }
   }
 }
-
