@@ -1,15 +1,10 @@
 package org.example.escenalocal.controllers;
 
-import com.mercadopago.client.payment.PaymentClient;
-import com.mercadopago.exceptions.MPApiException;
-import com.mercadopago.exceptions.MPException;
-import com.mercadopago.resources.payment.Payment;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.example.escenalocal.payments.CreatePrefCommand;
 import org.example.escenalocal.payments.PaymentGateway;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -24,23 +19,27 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PaymentController {
 
-
   private final PaymentGateway gateway;
 
-
   @PostMapping("/create-preference")
-  public Map<String, Object> create(@RequestBody CreatePrefCommand cmd,
-                                    HttpServletRequest request) throws Exception {
+  public Map<String, Object> create(
+    @RequestBody CreatePrefCommand cmd,
+    HttpServletRequest request
+  ) throws Exception {
 
-    String base = ServletUriComponentsBuilder.fromRequest(request)
+    String base = ServletUriComponentsBuilder
+      .fromRequest(request)
       .replacePath(null)
+      .replaceQuery(null)
       .build()
       .toUriString();
 
     var r = gateway.createPreferenceWithBase(cmd, base);
-    return Map.of("preferenceId", r.preferenceId(), "initPoint", r.initPoint());
+    return Map.of(
+      "preferenceId", r.preferenceId(),
+      "initPoint", r.initPoint()
+    );
   }
-
 
   @GetMapping("/status/{id}")
   public Map<String, Object> status(@PathVariable String id) {
@@ -51,7 +50,7 @@ public class PaymentController {
     path = "/create-preference/event/{eventId}",
     method = { RequestMethod.POST, RequestMethod.GET }
   )
-  public Map<String,Object> createForEvent(
+  public Map<String, Object> createForEvent(
     @PathVariable Long eventId,
     @RequestParam(defaultValue = "1") int qty,
     @RequestParam BigDecimal precio,
@@ -61,15 +60,21 @@ public class PaymentController {
     if (eventId == null || eventId <= 0) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "eventoId inválido");
     }
-    if (qty < 1) qty = 1;
+
+    qty = Math.max(qty, 1);
+
     if (precio == null || precio.compareTo(BigDecimal.ZERO) <= 0) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "precio inválido");
     }
+
     precio = precio.setScale(2, RoundingMode.HALF_UP);
 
-    String base = ServletUriComponentsBuilder.fromRequest(request)
-      .replacePath(null).replaceQuery(null)
-      .build().toUriString();
+    String base = ServletUriComponentsBuilder
+      .fromRequest(request)
+      .replacePath(null)
+      .replaceQuery(null)
+      .build()
+      .toUriString();
 
     var cmd = new CreatePrefCommand(
       "EVT-" + eventId,
@@ -84,33 +89,13 @@ public class PaymentController {
       ))
     );
 
-
     var r = gateway.createPreferenceWithBase(cmd, base);
-    return Map.of("preferenceId", r.preferenceId(), "initPoint", r.initPoint());
+    return Map.of(
+      "preferenceId", r.preferenceId(),
+      "initPoint", r.initPoint()
+    );
   }
-
-  @GetMapping("/debug/payment/{id}")
-  public ResponseEntity<?> debugPayment(@PathVariable Long id) {
-    try {
-      PaymentClient client = new PaymentClient();
-      Payment p = client.get(id);
-
-      System.out.println("🔍 DEBUG PAYMENT " + id);
-      System.out.println("status        = " + p.getStatus());
-      System.out.println("status_detail = " + p.getStatusDetail());
-      System.out.println("external_ref  = " + p.getExternalReference());
-
-      return ResponseEntity.ok(Map.of(
-        "id", p.getId(),
-        "status", p.getStatus(),
-        "status_detail", p.getStatusDetail(),
-        "external_reference", p.getExternalReference()
-      ));
-    } catch (Exception e) {
-      e.printStackTrace();
-      return ResponseEntity.status(404).body("Payment no encontrado o error: " + e.getMessage());
-    }
-  }
-
 }
+
+
 

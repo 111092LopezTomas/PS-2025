@@ -18,39 +18,33 @@ public class MercadoPagoGateway implements PaymentGateway {
   @Value("${app.base-url:http://localhost:8080}")
   private String baseUrl;
 
-  /** Si querés desactivar el webhook en local, seteá a false (o no pongas https) */
   @Value("${mercadopago.enable-webhook:true}")
   private boolean enableWebhook;
 
+  // ======================================================
+  // CREATE PREFERENCE
+  // ======================================================
   @Override
-  public CreatePrefResult createPreference(CreatePrefCommand cmd) throws MPException, MPApiException {
+  public CreatePrefResult createPreferenceWithBase(
+    CreatePrefCommand cmd,
+    String base
+  ) throws MPException, MPApiException {
 
-    String b = (baseUrl == null || baseUrl.isBlank()) ? "http://localhost:8080" : baseUrl.trim();
-    if (b.endsWith("/")) b = b.substring(0, b.length() - 1);
-    System.out.println("[MP] baseUrl = " + b);
+    String b = normalizeBase(base);
 
     var items = cmd.items().stream().map(i -> {
-      // quantity segura
-      Integer qty = i.quantity();
-      if (qty == null || qty < 1) qty = 1;
+      int qty = Math.max(i.quantity(), 1);
 
-      // precio seguro: NUNCA null/<=0 y con 2 decimales
       BigDecimal price = i.unitPrice();
-      if (price == null) {
-        throw new IllegalArgumentException("unit_price es null para item id=" + i.id());
-      }
-      price = price.setScale(2, RoundingMode.HALF_UP);
-      if (price.compareTo(BigDecimal.ZERO) <= 0) {
-        throw new IllegalArgumentException("unit_price <= 0 para item id=" + i.id());
+      if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+        throw new IllegalArgumentException("Precio inválido");
       }
 
-      // log útil para ver qué se envía realmente
-      System.out.printf("[MP] item id=%s qty=%d price=%s ARS%n",
-        i.id(), qty, price.toPlainString());
+      price = price.setScale(2, RoundingMode.HALF_UP);
 
       return PreferenceItemRequest.builder()
         .id(i.id())
-        .title((i.title()==null || i.title().isBlank()) ? "Entrada" : i.title())
+        .title(i.title() == null || i.title().isBlank() ? "Entrada" : i.title())
         .description(i.description())
         .quantity(qty)
         .currencyId("ARS")
@@ -58,16 +52,7 @@ public class MercadoPagoGateway implements PaymentGateway {
         .build();
     }).collect(Collectors.toList());
 
-// Validación final (fail-fast) antes de armar el PreferenceRequest
-    if (items.isEmpty()) throw new IllegalArgumentException("Sin items");
-    for (var it : items) {
-      if (it.getQuantity() == null || it.getQuantity() < 1)
-        throw new IllegalArgumentException("quantity inválida");
-      if (it.getUnitPrice() == null || it.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0)
-        throw new IllegalArgumentException("unit_price inválido");
-    }
-
-    var back = PreferenceBackUrlsRequest.builder()
+    var backUrls = PreferenceBackUrlsRequest.builder()
       .success(b + "/checkout/success")
       .pending(b + "/checkout/pending")
       .failure(b + "/checkout/failure")
@@ -75,49 +60,45 @@ public class MercadoPagoGateway implements PaymentGateway {
 
     var builder = PreferenceRequest.builder()
       .items(items)
-      .backUrls(back)
+      .backUrls(backUrls)
       .externalReference(cmd.externalReference())
       .metadata(Map.of(
-
-        "tipoEntradaId", cmd.items().get(0).id(),
-        "cantidad", cmd.items().get(0).quantity()
+        "usuarioId", String.valueOf(cmd.usuarioId()),
+        "eventoId", String.valueOf(cmd.eventoId()),
+        "cantidad", cmd.items().get(0).quantity(),
+        "precio", cmd.items().get(0).unitPrice().toPlainString()
       ));
 
+    // Auto return solo HTTPS
     if (b.startsWith("https://")) {
       builder.autoReturn("approved");
     }
 
-    String webhookUrl = b + "/payments/webhook";
-    if (enableWebhook && webhookUrl.startsWith("https://")) {
-      builder.notificationUrl(webhookUrl);
+    // Webhook solo HTTPS
+    if (enableWebhook && b.startsWith("https://")) {
+      builder.notificationUrl(b + "/payments/webhook");
     }
 
-    var prefReq = builder.build();
+    var pref = new PreferenceClient().create(builder.build());
 
-    try {
-      var client = new PreferenceClient();
-      var pref = client.create(prefReq);
-
-      System.out.println("[MP] initPoint        = " + pref.getInitPoint());
-      System.out.println("[MP] sandboxInitPoint = " + pref.getSandboxInitPoint());
-      System.out.println("[MP] notificationUrl  = " + pref.getNotificationUrl());
-
-      return new CreatePrefResult(pref.getId(), pref.getInitPoint());
-    } catch (MPApiException e) {
-      System.err.println("MPApiException status = " + e.getApiResponse().getStatusCode());
-      System.err.println("MPApiException body   = " + e.getApiResponse().getContent());
-      throw e;
-    }
+    return new CreatePrefResult(pref.getId(), pref.getInitPoint());
   }
 
+  @Override
+  public CreatePrefResult createPreference(CreatePrefCommand cmd) throws MPException, MPApiException {
+    return null;
+  }
 
+  // ======================================================
+  // PAYMENT STATUS
+  // ======================================================
   @Override
   public PaymentStatus getStatus(String id) {
     try {
       var payment = new PaymentClient().get(Long.parseLong(id));
-      return switch (String.valueOf(payment.getStatus()).toLowerCase()) {
+      return switch (payment.getStatus()) {
         case "approved" -> PaymentStatus.APPROVED;
-        case "pending" -> PaymentStatus.PENDING;
+        case "pending", "in_process" -> PaymentStatus.PENDING;
         default -> PaymentStatus.REJECTED;
       };
     } catch (Exception e) {
@@ -125,109 +106,26 @@ public class MercadoPagoGateway implements PaymentGateway {
     }
   }
 
-  @Override
-  public CreatePrefResult createPreferenceWithBase(CreatePrefCommand cmd, String base) throws MPException, MPApiException {
-    // 1) Sanitizar base y asegurar que sea absoluta
-    String b = (base == null || base.isBlank()) ? "http://localhost:8080" : base.trim();
-    if (b.endsWith("/")) b = b.substring(0, b.length() - 1);
-    System.out.println("[MP] baseUrl (req) = " + b);
+  // ======================================================
+  // BASE NORMALIZER
+  // ======================================================
+  private String normalizeBase(String base) {
+    String b = (base == null || base.isBlank())
+      ? baseUrl
+      : base.trim();
 
+    if (b.endsWith("/")) {
+      b = b.substring(0, b.length() - 1);
+    }
+
+    // ngrok siempre HTTPS
     if (b.startsWith("http://") && b.contains("ngrok")) {
-      b = "https://" + b.substring("http://".length());
-      System.out.println("[MP] baseUrl (fix) = " + b);
+      b = "https://" + b.substring(7);
     }
 
-    // 2) Mapear ítems
-//    var items = cmd.items().stream().map(i ->
-//      PreferenceItemRequest.builder()
-//        .id(i.id())
-//        .title(i.title())
-//        .description(i.description())
-//        .quantity(i.quantity())     // >= 1
-//        .currencyId("ARS")
-//        .unitPrice(i.unitPrice())   // BigDecimal con punto
-//        .build()
-//    ).collect(Collectors.toList());
-
-    var items = cmd.items().stream().map(i -> {
-      // quantity segura
-      Integer qty = i.quantity();
-      if (qty == null || qty < 1) qty = 1;
-
-      // precio seguro: NUNCA null/<=0 y con 2 decimales
-      BigDecimal price = i.unitPrice();
-      if (price == null) {
-        throw new IllegalArgumentException("unit_price es null para item id=" + i.id());
-      }
-      price = price.setScale(2, RoundingMode.HALF_UP);
-      if (price.compareTo(BigDecimal.ZERO) <= 0) {
-        throw new IllegalArgumentException("unit_price <= 0 para item id=" + i.id());
-      }
-
-      // log útil para ver qué se envía realmente
-      System.out.printf("[MP] item id=%s qty=%d price=%s ARS%n",
-        i.id(), qty, price.toPlainString());
-
-      return PreferenceItemRequest.builder()
-        .id(i.id())
-        .title((i.title()==null || i.title().isBlank()) ? "Entrada" : i.title())
-        .description(i.description())
-        .quantity(qty)
-        .currencyId("ARS")
-        .unitPrice(price)
-        .build();
-    }).collect(Collectors.toList());
-
-// Validación final (fail-fast) antes de armar el PreferenceRequest
-    if (items.isEmpty()) throw new IllegalArgumentException("Sin items");
-    for (var it : items) {
-      if (it.getQuantity() == null || it.getQuantity() < 1)
-        throw new IllegalArgumentException("quantity inválida");
-      if (it.getUnitPrice() == null || it.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0)
-        throw new IllegalArgumentException("unit_price inválido");
-    }
-
-    // 3) back_urls ABSOLUTAS
-    var back = PreferenceBackUrlsRequest.builder()
-      .success(b + "/checkout/success")
-      .pending(b + "/checkout/pending")
-      .failure(b + "/checkout/failure")
-      .build();
-
-    // 4) Construir preference (autoReturn condicional por HTTPS)
-    var builder = PreferenceRequest.builder()
-      .items(items)
-      .backUrls(back)
-      .externalReference(cmd.externalReference());
-
-    // Sólo habilitar autoReturn si la base es HTTPS (MP lo exige)
-    if (b.startsWith("https://")) {
-      builder.autoReturn("approved");
-    }
-
-    // 5) Webhook sólo si hay HTTPS y está habilitado
-    String webhookUrl = b + "/payments/webhook";
-    if (enableWebhook && webhookUrl.startsWith("https://")) {
-      builder.notificationUrl(webhookUrl);
-    }
-
-    var prefReq = builder.build();
-
-    try {
-      var client = new com.mercadopago.client.preference.PreferenceClient();
-      var pref = client.create(prefReq);
-
-      System.out.println("[MP] PREFERENCE ID     = " + pref.getId());
-      System.out.println("[MP] initPoint         = " + pref.getInitPoint());
-      System.out.println("[MP] notification_url  = " + pref.getNotificationUrl());
-
-      return new CreatePrefResult(pref.getId(), pref.getInitPoint());
-    } catch (com.mercadopago.exceptions.MPApiException e) {
-      System.err.println("MPApiException status = " + e.getApiResponse().getStatusCode());
-      System.err.println("MPApiException body   = " + e.getApiResponse().getContent());
-      throw e;
-    }
+    return b;
   }
-
-
 }
+
+
+

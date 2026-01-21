@@ -6,6 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { loadMercadoPago } from '@mercadopago/sdk-js';
 
+
 @Component({
   selector: 'app-checkout',
   templateUrl: './checkout.component.html',

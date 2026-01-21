@@ -112,7 +112,6 @@ public PostPaymentInfoDto getPaymentInfo(Long paymentId) {
   try {
     PaymentClient client = new PaymentClient();
 
-    // Llamamos a MP para obtener datos del pago
     Payment p = client.get(paymentId);
 
     if (p == null) {
@@ -120,18 +119,21 @@ public PostPaymentInfoDto getPaymentInfo(Long paymentId) {
       return null;
     }
 
-    // Extraer metadata enviado desde la preferencia o pago API
     Map<String, Object> md = p.getMetadata();
+    if (md == null) {
+      System.out.println("⚠ Pago sin metadata id = " + paymentId);
+      return null;
+    }
 
-    Long usuarioId = md.get("usuarioId") != null ? Long.valueOf(md.get("usuarioId").toString()) : null;
-    Long eventoId  = md.get("eventoId")  != null ? Long.valueOf(md.get("eventoId").toString())  : null;
-    Long tipoEntradaId = md.get("tipoEntradaId") != null ? Long.valueOf(md.get("tipoEntradaId").toString()) : null;
-    Integer cantidad   = md.get("cantidad") != null ? Integer.valueOf(md.get("cantidad").toString()) : null;
-    BigDecimal precio  = md.get("precio") != null ? new BigDecimal(md.get("precio").toString()) : null;
+    Long usuarioId = getLong(md.get("usuarioId"));
+    Long eventoId = getLong(md.get("eventoId"));
+    Long tipoEntradaId = getLong(md.get("tipoEntradaId"));
+    Integer cantidad = getInteger(md.get("cantidad"));
+    double precio = getBigDecimal(md.get("precio"));
 
     return new PostPaymentInfoDto(
       paymentId,
-      p.getStatus(),      // approved, rejected, pending
+      p.getStatus(),
       usuarioId,
       eventoId,
       tipoEntradaId,
@@ -140,9 +142,37 @@ public PostPaymentInfoDto getPaymentInfo(Long paymentId) {
     );
 
   } catch (Exception e) {
-    e.printStackTrace();
     System.out.println("⚠ Error consultando MP payment ID=" + paymentId + ": " + e.getMessage());
     return null;
   }
 }
+
+/* =========================
+   HELPERS SEGUROS
+   ========================= */
+
+  private Long getLong(Object value) {
+    if (value == null) return null;
+    if (value instanceof Number n) {
+      return n.longValue();
+    }
+    return Long.valueOf(value.toString());
+  }
+
+  private Integer getInteger(Object value) {
+    if (value == null) return null;
+    if (value instanceof Number n) {
+      return n.intValue(); // 🔥 1.0 → 1
+    }
+    return Integer.valueOf(value.toString());
+  }
+
+  private BigDecimal getBigDecimal(Object value) {
+    if (value == null) return null;
+    if (value instanceof Number n) {
+      return BigDecimal.valueOf(n.doubleValue());
+    }
+    return new BigDecimal(value.toString());
+  }
+
 }

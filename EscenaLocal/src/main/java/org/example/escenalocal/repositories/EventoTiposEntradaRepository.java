@@ -1,9 +1,14 @@
 package org.example.escenalocal.repositories;
 
 import org.example.escenalocal.entities.EventoTiposEntradaEntity;
+import org.example.escenalocal.entities.EventoTiposEntradaId;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface EventoTiposEntradaRepository extends JpaRepository<EventoTiposEntradaEntity, Long> {
+import java.util.Optional;
+
+public interface EventoTiposEntradaRepository
+  extends JpaRepository<EventoTiposEntradaEntity, EventoTiposEntradaId> {
+
+  Optional<EventoTiposEntradaEntity>
+  findById_EventoIdAndId_TiposEntradaId(Long eventoId, Long tiposEntradaId);
 }
