@@ -129,7 +129,7 @@ public PostPaymentInfoDto getPaymentInfo(Long paymentId) {
     Long eventoId = getLong(md.get("eventoId"));
     Long tipoEntradaId = getLong(md.get("tipoEntradaId"));
     Integer cantidad = getInteger(md.get("cantidad"));
-    double precio = getBigDecimal(md.get("precio"));
+    BigDecimal precio = getBigDecimal(md.get("precio"));
 
     return new PostPaymentInfoDto(
       paymentId,

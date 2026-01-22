@@ -12,7 +12,7 @@ public class PostPaymentInfoDto {
   private Long eventoId;
   private Long tipoEntradaId;
   private Integer cantidad;
-  private Double precio;
+  private BigDecimal precio;
 
   public PostPaymentInfoDto(
     Long paymentId,
@@ -21,7 +21,7 @@ public class PostPaymentInfoDto {
     Long eventoId,
     Long tipoEntradaId,
     Integer cantidad,
-    double precio
+    BigDecimal precio
   ) {
     this.paymentId = paymentId;
     this.status = status;

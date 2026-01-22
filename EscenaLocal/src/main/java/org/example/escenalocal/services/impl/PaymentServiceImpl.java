@@ -24,7 +24,6 @@ public class PaymentServiceImpl {
   @Transactional
   public void processPayment(Long paymentId) {
 
-    // 1️⃣ Consultar pago real en MercadoPago
     PostPaymentInfoDto info = mercadopagoService.getPaymentInfo(paymentId);
 
     if (info == null || info.getStatus() == null) {
@@ -32,13 +31,24 @@ public class PaymentServiceImpl {
       return;
     }
 
-    // 2️⃣ Validar estado del pago
     if (!"approved".equalsIgnoreCase(info.getStatus())) {
       System.out.println("⚠ Pago no aprobado: " + info.getStatus());
       return;
     }
 
-    // 3️⃣ Evitar duplicados (misma compra procesada más de una vez)
+    // 🔒 Validación CRÍTICA
+    if (
+      info.getUsuarioId() == null ||
+        info.getEventoId() == null ||
+        info.getTipoEntradaId() == null ||
+        info.getCantidad() == null ||
+        info.getPrecio() == null
+    ) {
+      System.out.println("⚠ Pago aprobado pero metadata incompleta. paymentId=" + paymentId);
+      System.out.println("metadata=" + info);
+      return;
+    }
+
     boolean yaExiste =
       ventaRepo.existsByUsuario_IdAndTipoEntradaEvento_Id_EventoIdAndTipoEntradaEvento_Id_TiposEntradaId(
         info.getUsuarioId(),
@@ -51,7 +61,6 @@ public class PaymentServiceImpl {
       return;
     }
 
-    // 4️⃣ ACÁ RECIÉN CONFIRMÁS LA COMPRA ✅
     VentaEntradaEntity venta = new VentaEntradaEntity();
 
     venta.setUsuario(
@@ -69,11 +78,8 @@ public class PaymentServiceImpl {
     venta.setCantidad(info.getCantidad());
     venta.setPrecioUnitario(info.getPrecio());
 
-    // 5️⃣ Persistir
     ventaRepo.save(venta);
 
     System.out.println("✅ Venta registrada correctamente (paymentId=" + paymentId + ")");
   }
-
 }
-

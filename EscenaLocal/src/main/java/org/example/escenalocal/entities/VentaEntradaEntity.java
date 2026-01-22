@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,18 +32,21 @@ public class VentaEntradaEntity {
   })
   private EventoTiposEntradaEntity tipoEntradaEvento;
 
+  // Fecha y hora exacta de la venta
+  private LocalDateTime fechaVenta = LocalDateTime.now();
+
   // Cantidad comprada
   private int cantidad;
 
   // Precio unitario al momento de la compra (snapshot)
-  private double precioUnitario;
-
-  // Fecha y hora exacta de la venta
-  private LocalDateTime fechaVenta = LocalDateTime.now();
+  private BigDecimal precioUnitario;
 
   // Monto total de la compra
-  public double getMontoTotal() {
-    return cantidad * precioUnitario;
+  public BigDecimal getMontoTotal() {
+    if (precioUnitario == null) {
+      return BigDecimal.ZERO;
+    }
+    return precioUnitario.multiply(BigDecimal.valueOf(cantidad));
   }
 }
 
