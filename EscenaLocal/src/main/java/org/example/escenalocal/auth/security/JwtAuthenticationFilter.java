@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getServletPath();
-
+    System.out.println("🔍 shouldNotFilter path = " + path);
     List<String> publicPaths = List.of(
       "/auth/login",
       "/auth/register",
@@ -38,14 +38,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       "/h2-console",
       "/swagger-resources",
       "/webjars",
-      "/payments/webhook"
+      "/payments/webhook",
+      "/payments/create-preference"
     );
 
     // Si el path empieza por alguna ruta pública → NO aplicar JWT
     return publicPaths.stream().anyMatch(path::startsWith);
+
   }
 
+
   @Override
+
   protected void doFilterInternal(HttpServletRequest request,
                                   HttpServletResponse response,
                                   FilterChain filterChain)

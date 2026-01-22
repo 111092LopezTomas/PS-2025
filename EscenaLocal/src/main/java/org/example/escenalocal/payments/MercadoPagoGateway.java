@@ -65,6 +65,7 @@ public class MercadoPagoGateway implements PaymentGateway {
       .metadata(Map.of(
         "usuarioId", String.valueOf(cmd.usuarioId()),
         "eventoId", String.valueOf(cmd.eventoId()),
+        "tipoEntradaId", cmd.tipoEntradaId(),
         "cantidad", cmd.items().get(0).quantity(),
         "precio", cmd.items().get(0).unitPrice().toPlainString()
       ));

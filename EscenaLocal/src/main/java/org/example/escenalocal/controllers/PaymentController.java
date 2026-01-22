@@ -2,6 +2,7 @@ package org.example.escenalocal.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.example.escenalocal.auth.repository.UserRepository;
 import org.example.escenalocal.payments.CreatePrefCommand;
 import org.example.escenalocal.payments.PaymentGateway;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 
 @RestController
 @RequestMapping("/payments")
@@ -20,6 +23,7 @@ import java.util.Map;
 public class PaymentController {
 
   private final PaymentGateway gateway;
+  private final UserRepository usuarioRepository;
 
   @PostMapping("/create-preference")
   public Map<String, Object> create(
@@ -46,12 +50,11 @@ public class PaymentController {
     return Map.of("status", gateway.getStatus(id).name());
   }
 
-  @RequestMapping(
-    path = "/create-preference/event/{eventId}",
-    method = { RequestMethod.POST, RequestMethod.GET }
-  )
+  @PostMapping("/create-preference/event/{eventId}")
   public Map<String, Object> createForEvent(
-    @PathVariable Long eventId,
+
+  @PathVariable Long eventId,
+    @RequestParam Long tipoEntradaId,
     @RequestParam(defaultValue = "1") int qty,
     @RequestParam BigDecimal precio,
     HttpServletRequest request
@@ -76,18 +79,33 @@ public class PaymentController {
       .build()
       .toUriString();
 
+    String username = SecurityContextHolder
+      .getContext()
+      .getAuthentication()
+      .getName();
+
+    Long usuarioId = usuarioRepository
+      .findByUsername(username)
+      .orElseThrow(() -> new RuntimeException("Usuario no encontrado"))
+      .getId();
+
+
     var cmd = new CreatePrefCommand(
       "EVT-" + eventId,
-      null,
+      usuarioId,        // ✅ YA NO ES NULL
       eventId,
-      List.of(new CreatePrefCommand.Item(
-        String.valueOf(eventId),
-        "Entrada",
-        "Show",
-        qty,
-        precio
-      ))
+      tipoEntradaId,
+      List.of(
+        new CreatePrefCommand.Item(
+          String.valueOf(tipoEntradaId),
+          "Entrada",
+          "Show",
+          qty,
+          precio
+        )
+      )
     );
+
 
     var r = gateway.createPreferenceWithBase(cmd, base);
     return Map.of(
