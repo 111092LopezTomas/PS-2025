@@ -20,7 +20,7 @@ public class WebhookController {
   public ResponseEntity<String> handleWebhook(
     @RequestParam(required = false) Map<String, String> query,
     @RequestBody(required = false) String bodyRaw
-  ) {
+  ) throws Exception {
 
     Long paymentId = extractPaymentId(query, bodyRaw);
 

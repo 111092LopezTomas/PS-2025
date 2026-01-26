@@ -7,63 +7,88 @@
         </div>
         <div class="card-body">
           <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
-            
             <!-- Nombre del Evento -->
             <div class="mb-3">
-              <label for="nombreEvento" class="form-label">Nombre del Evento</label>
-              <input 
-                type="text" 
-                class="form-control" 
+              <label for="nombreEvento" class="form-label"
+                >Nombre del Evento</label
+              >
+              <input
+                type="text"
+                class="form-control"
                 id="nombreEvento"
                 formControlName="nombreEvento"
                 [class.is-invalid]="submitted && f['nombreEvento'].errors"
-                placeholder="Ingrese el nombre del evento">
-              <div class="invalid-feedback" *ngIf="submitted && f['nombreEvento'].errors">
-                <div *ngIf="f['nombreEvento'].errors['required']">El nombre del evento es requerido</div>
-                <div *ngIf="f['nombreEvento'].errors['minlength']">El nombre debe tener al menos 3 caracteres</div>
+                placeholder="Ingrese el nombre del evento"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="submitted && f['nombreEvento'].errors"
+              >
+                <div *ngIf="f['nombreEvento'].errors['required']">
+                  El nombre del evento es requerido
+                </div>
+                <div *ngIf="f['nombreEvento'].errors['minlength']">
+                  El nombre debe tener al menos 3 caracteres
+                </div>
               </div>
             </div>
 
             <!-- Descripción -->
             <div class="mb-3">
               <label for="descripcion" class="form-label">Descripción</label>
-              <textarea 
-                class="form-control" 
+              <textarea
+                class="form-control"
                 id="descripcion"
                 formControlName="descripcion"
                 rows="4"
                 [class.is-invalid]="submitted && f['descripcion'].errors"
-                placeholder="Ingrese una descripción del evento"></textarea>
-              <div class="invalid-feedback" *ngIf="submitted && f['descripcion'].errors">
-                <div *ngIf="f['descripcion'].errors['required']">La descripción es requerida</div>
-                <div *ngIf="f['descripcion'].errors['minlength']">La descripción debe tener al menos 10 caracteres</div>
+                placeholder="Ingrese una descripción del evento"
+              ></textarea>
+              <div
+                class="invalid-feedback"
+                *ngIf="submitted && f['descripcion'].errors"
+              >
+                <div *ngIf="f['descripcion'].errors['required']">
+                  La descripción es requerida
+                </div>
+                <div *ngIf="f['descripcion'].errors['minlength']">
+                  La descripción debe tener al menos 10 caracteres
+                </div>
               </div>
               <small class="text-muted">
-                {{ eventForm.get('descripcion')?.value?.length || 0 }} caracteres
+                {{
+                  eventForm.get("descripcion")?.value?.length || 0
+                }}
+                caracteres
               </small>
             </div>
 
             <!-- Artistas (Múltiples) -->
             <div class="mb-3">
               <label class="form-label">Artistas</label>
-              
+
               <!-- Selector de Artista -->
               <div class="input-group">
-                <select 
-                  class="form-select" 
+                <select
+                  class="form-select"
                   id="artistaSelector"
                   [(ngModel)]="artistaSeleccionado"
-                  [ngModelOptions]="{standalone: true}">
+                  [ngModelOptions]="{ standalone: true }"
+                >
                   <option value="">Seleccione un artista para agregar</option>
-                  <option *ngFor="let artista of artistasDisponibles()" [value]="artista.id">
+                  <option
+                    *ngFor="let artista of artistasDisponibles()"
+                    [value]="artista.id"
+                  >
                     {{ artista.nombre }}
                   </option>
                 </select>
-                <button 
-                  class="btn btn-orange" 
+                <button
+                  class="btn btn-orange"
                   type="button"
                   (click)="agregarArtista()"
-                  [disabled]="!artistaSeleccionado">
+                  [disabled]="!artistaSeleccionado"
+                >
                   <i class="bi bi-plus-lg"></i> Agregar
                 </button>
               </div>
@@ -72,16 +97,19 @@
               <div class="mt-3" *ngIf="artistasSeleccionados.length > 0">
                 <label class="form-label fw-bold">Artistas agregados:</label>
                 <div class="list-group">
-                  <div *ngFor="let artista of artistasSeleccionados; let i = index" 
-                       class="list-group-item d-flex justify-content-between align-items-center">
+                  <div
+                    *ngFor="let artista of artistasSeleccionados; let i = index"
+                    class="list-group-item d-flex justify-content-between align-items-center"
+                  >
                     <div>
                       <i class="bi bi-person-fill text-primary me-2"></i>
                       <span>{{ getNombreArtista(artista) }}</span>
                     </div>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       class="btn btn-sm btn-outline-danger"
-                      (click)="eliminarArtista(i)">
+                      (click)="eliminarArtista(i)"
+                    >
                       <i class="bi bi-trash"></i>
                     </button>
                   </div>
@@ -89,84 +117,98 @@
               </div>
 
               <!-- Mensaje de validación -->
-              <div class="text-danger small mt-2" *ngIf="submitted && artistasSeleccionados.length === 0">
+              <div
+                class="text-danger small mt-2"
+                *ngIf="submitted && artistasSeleccionados.length === 0"
+              >
                 Debe agregar al menos un artista
               </div>
 
               <!-- Spinner de carga -->
-              <div class="text-center mt-2" *ngIf="isLoading && artistas.length === 0">
-                <div class="spinner-border spinner-border-sm text-primary" role="status">
+              <div
+                class="text-center mt-2"
+                *ngIf="isLoading && artistas.length === 0"
+              >
+                <div
+                  class="spinner-border spinner-border-sm text-primary"
+                  role="status"
+                >
                   <span class="visually-hidden">Cargando...</span>
                 </div>
               </div>
             </div>
 
-            <!-- Productor -->
             <div class="mb-3">
-              <label for="productorId" class="form-label">Productor</label>
-              <select 
-                class="form-select" 
-                id="productorId"
-                formControlName="productorId"
-                [class.is-invalid]="submitted && f['productorId'].errors">
-                <option value="">Seleccione un productor</option>
-                <option *ngFor="let productor of productores" [value]="productor.id">
-                  {{ productor.nombre }}
-                </option>
-              </select>
-              <div class="invalid-feedback" *ngIf="submitted && f['productorId'].errors">
-                Debe seleccionar un productor
-              </div>
-            </div>
+  <label class="form-label">Productor</label>
+  <input
+    type="text"
+    class="form-control"
+    [value]="eventForm.get('productorId')?.value"
+    readonly>
+  <small class="text-muted">
+    ID de productor asociado a tu cuenta (no editable).
+  </small>
+</div>
 
             <!-- Tipo de Entrada (Múltiples con precio y disponibilidad) -->
             <div class="mb-3">
               <label class="form-label">Tipos de Entrada</label>
-              
+
               <!-- Selector de Tipo de Entrada con Precio y Disponibilidad -->
               <div class="card bg-light p-3">
                 <div class="row g-3">
                   <div class="col-md-6">
                     <label class="form-label small">Tipo de Entrada</label>
-                    <select 
-                      class="form-select" 
+                    <select
+                      class="form-select"
                       [(ngModel)]="tipoEntradaSeleccionado"
-                      [ngModelOptions]="{standalone: true}">
+                      [ngModelOptions]="{ standalone: true }"
+                    >
                       <option value="">Seleccione un tipo</option>
-                      <option *ngFor="let tipo of tiposEntradaDisponibles()" [value]="tipo.id">
+                      <option
+                        *ngFor="let tipo of tiposEntradaDisponibles()"
+                        [value]="tipo.id"
+                      >
                         {{ tipo.entrada }}
                       </option>
                     </select>
                   </div>
-                  
+
                   <div class="col-md-3">
                     <label class="form-label small">Precio</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       class="form-control"
                       [(ngModel)]="precioEntrada"
-                      [ngModelOptions]="{standalone: true}"
+                      [ngModelOptions]="{ standalone: true }"
                       placeholder="Ej: 5000"
-                      min="0">
+                      min="0"
+                    />
                   </div>
 
                   <div class="col-md-3">
                     <label class="form-label small">Disponibilidad</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       class="form-control"
                       [(ngModel)]="disponibilidadEntrada"
-                      [ngModelOptions]="{standalone: true}"
+                      [ngModelOptions]="{ standalone: true }"
                       placeholder="Ej: 100"
-                      min="0">
+                      min="0"
+                    />
                   </div>
                 </div>
 
-                <button 
-                  class="btn btn-orange mt-3 w-100" 
+                <button
+                  class="btn btn-orange mt-3 w-100"
                   type="button"
                   (click)="agregarTipoEntrada()"
-                  [disabled]="!tipoEntradaSeleccionado || !precioEntrada || !disponibilidadEntrada">
+                  [disabled]="
+                    !tipoEntradaSeleccionado ||
+                    !precioEntrada ||
+                    !disponibilidadEntrada
+                  "
+                >
                   <i class="bi bi-plus-lg"></i> Agregar Entrada
                 </button>
               </div>
@@ -175,29 +217,40 @@
               <div class="mt-3" *ngIf="tiposEntradaSeleccionados.length > 0">
                 <label class="form-label fw-bold">Entradas configuradas:</label>
                 <div class="list-group">
-                  <div *ngFor="let entrada of tiposEntradaSeleccionados; let i = index" 
-                       class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center">
+                  <div
+                    *ngFor="
+                      let entrada of tiposEntradaSeleccionados;
+                      let i = index
+                    "
+                    class="list-group-item"
+                  >
+                    <div
+                      class="d-flex justify-content-between align-items-center"
+                    >
                       <div class="flex-grow-1">
                         <div class="d-flex align-items-center mb-2">
-                          <i class="bi bi-ticket-perforated text-primary me-2"></i>
+                          <i
+                            class="bi bi-ticket-perforated text-primary me-2"
+                          ></i>
                           <strong>{{ entrada.nombre }}</strong>
                         </div>
                         <div class="d-flex gap-3 text-muted small">
                           <span>
-                            <i class="bi bi-currency-dollar"></i> 
+                            <i class="bi bi-currency-dollar"></i>
                             Precio: <strong>${{ entrada.precio }}</strong>
                           </span>
                           <span>
-                            <i class="bi bi-people"></i> 
-                            Disponibilidad: <strong>{{ entrada.disponibilidad }}</strong>
+                            <i class="bi bi-people"></i>
+                            Disponibilidad:
+                            <strong>{{ entrada.disponibilidad }}</strong>
                           </span>
                         </div>
                       </div>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         class="btn btn-sm btn-outline-danger"
-                        (click)="eliminarTipoEntrada(i)">
+                        (click)="eliminarTipoEntrada(i)"
+                      >
                         <i class="bi bi-trash"></i>
                       </button>
                     </div>
@@ -206,43 +259,64 @@
               </div>
 
               <!-- Mensaje de validación -->
-              <div class="text-danger small mt-2" *ngIf="submitted && tiposEntradaSeleccionados.length === 0">
+              <div
+                class="text-danger small mt-2"
+                *ngIf="submitted && tiposEntradaSeleccionados.length === 0"
+              >
                 Debe agregar al menos un tipo de entrada
               </div>
             </div>
 
             <!-- Establecimiento -->
             <div class="mb-3">
-              <label for="establecimientoId" class="form-label">Establecimiento</label>
-              <select 
-                class="form-select" 
+              <label for="establecimientoId" class="form-label"
+                >Establecimiento</label
+              >
+              <select
+                class="form-select"
                 id="establecimientoId"
                 formControlName="establecimientoId"
-                [class.is-invalid]="submitted && f['establecimientoId'].errors">
+                [class.is-invalid]="submitted && f['establecimientoId'].errors"
+              >
                 <option value="">Seleccione un establecimiento</option>
-                <option *ngFor="let establecimiento of establecimientos" [value]="establecimiento.id">
+                <option
+                  *ngFor="let establecimiento of establecimientos"
+                  [value]="establecimiento.id"
+                >
                   {{ establecimiento.establecimiento }}
                 </option>
               </select>
-              <div class="invalid-feedback" *ngIf="submitted && f['establecimientoId'].errors">
+              <div
+                class="invalid-feedback"
+                *ngIf="submitted && f['establecimientoId'].errors"
+              >
                 Debe seleccionar un establecimiento
               </div>
             </div>
 
             <!-- Clasificación -->
             <div class="mb-3">
-              <label for="clasificacionId" class="form-label">Clasificación</label>
-              <select 
-                class="form-select" 
+              <label for="clasificacionId" class="form-label"
+                >Clasificación</label
+              >
+              <select
+                class="form-select"
                 id="clasificacionId"
                 formControlName="clasificacionId"
-                [class.is-invalid]="submitted && f['clasificacionId'].errors">
+                [class.is-invalid]="submitted && f['clasificacionId'].errors"
+              >
                 <option value="">Seleccione una clasificación</option>
-                <option *ngFor="let clasificacion of clasificaciones" [value]="clasificacion.id">
+                <option
+                  *ngFor="let clasificacion of clasificaciones"
+                  [value]="clasificacion.id"
+                >
                   {{ clasificacion.clasificacion }}
                 </option>
               </select>
-              <div class="invalid-feedback" *ngIf="submitted && f['clasificacionId'].errors">
+              <div
+                class="invalid-feedback"
+                *ngIf="submitted && f['clasificacionId'].errors"
+              >
                 Debe seleccionar una clasificación
               </div>
             </div>
@@ -250,13 +324,17 @@
             <!-- Fecha -->
             <div class="mb-3">
               <label for="fecha" class="form-label">Fecha del Evento</label>
-              <input 
-                type="date" 
-                class="form-control" 
+              <input
+                type="date"
+                class="form-control"
                 id="fecha"
                 formControlName="fecha"
-                [class.is-invalid]="submitted && f['fecha'].errors">
-              <div class="invalid-feedback" *ngIf="submitted && f['fecha'].errors">
+                [class.is-invalid]="submitted && f['fecha'].errors"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="submitted && f['fecha'].errors"
+              >
                 La fecha es requerida
               </div>
             </div>
@@ -264,13 +342,17 @@
             <!-- Hora -->
             <div class="mb-3">
               <label for="hora" class="form-label">Hora del Evento</label>
-              <input 
-                type="time" 
-                class="form-control" 
+              <input
+                type="time"
+                class="form-control"
                 id="hora"
                 formControlName="hora"
-                [class.is-invalid]="submitted && f['hora'].errors">
-              <div class="invalid-feedback" *ngIf="submitted && f['hora'].errors">
+                [class.is-invalid]="submitted && f['hora'].errors"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="submitted && f['hora'].errors"
+              >
                 La hora es requerida
               </div>
             </div>
@@ -278,35 +360,43 @@
             <!-- Imagen -->
             <div class="mb-3">
               <label for="imagen" class="form-label">Imagen del Evento</label>
-              <input 
-                type="file" 
-                class="form-control" 
+              <input
+                type="file"
+                class="form-control"
                 id="imagen"
                 accept="image/*"
                 (change)="onFileSelected($event)"
-                [class.is-invalid]="submitted && f['imagen'].errors">
-              <div class="invalid-feedback" *ngIf="submitted && f['imagen'].errors">
+                [class.is-invalid]="submitted && f['imagen'].errors"
+              />
+              <div
+                class="invalid-feedback"
+                *ngIf="submitted && f['imagen'].errors"
+              >
                 Debe seleccionar una imagen
               </div>
-              
+
               <!-- Preview de la imagen -->
               <div class="mt-3" *ngIf="imagePreview">
                 <div class="position-relative d-inline-block">
-                  <img 
-                    [src]="imagePreview" 
-                    alt="Preview" 
+                  <img
+                    [src]="imagePreview"
+                    alt="Preview"
                     class="img-thumbnail"
-                    style="max-width: 300px; max-height: 300px;">
-                  <button 
-                    type="button" 
+                    style="max-width: 300px; max-height: 300px"
+                  />
+                  <button
+                    type="button"
                     class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
-                    (click)="removeImage()">
+                    (click)="removeImage()"
+                  >
                     <i class="bi bi-x-lg"></i> Eliminar
                   </button>
                 </div>
                 <p class="text-muted small mt-2">
-                  <strong>Archivo:</strong> {{ selectedFile?.name }} 
-                  ({{ (selectedFile?.size || 0) / 1024 | number:'1.0-2' }} KB)
+                  <strong>Archivo:</strong> {{ selectedFile?.name }} ({{
+                    (selectedFile?.size || 0) / 1024 | number : "1.0-2"
+                  }}
+                  KB)
                 </p>
               </div>
             </div>
@@ -314,17 +404,21 @@
             <!-- Estado Activo/Inactivo -->
             <div class="mb-3">
               <div class="form-check form-switch">
-                <input 
-                  class="form-check-input" 
-                  type="checkbox" 
+                <input
+                  class="form-check-input"
+                  type="checkbox"
                   role="switch"
                   id="activo"
-                  formControlName="activo">
+                  formControlName="activo"
+                />
                 <label class="form-check-label" for="activo">
-                  <strong>Estado:</strong> 
-                  <span class="badge" [class.bg-success]="eventForm.get('activo')?.value" 
-                        [class.bg-secondary]="!eventForm.get('activo')?.value">
-                    {{ eventForm.get('activo')?.value ? 'Activo' : 'Inactivo' }}
+                  <strong>Estado:</strong>
+                  <span
+                    class="badge"
+                    [class.bg-success]="eventForm.get('activo')?.value"
+                    [class.bg-secondary]="!eventForm.get('activo')?.value"
+                  >
+                    {{ eventForm.get("activo")?.value ? "Activo" : "Inactivo" }}
                   </span>
                 </label>
               </div>
@@ -335,21 +429,27 @@
 
             <!-- Botones -->
             <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-              <button type="button" class="btn btn-secondary" (click)="volver()">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                (click)="volver()"
+              >
                 <i class="bi bi-arrow-left"></i> Volver
               </button>
-              
+
               <div class="d-flex gap-2">
-                <button 
-                  type="button" 
-                  class="btn btn-outline-secondary" 
-                  (click)="resetForm()">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="resetForm()"
+                >
                   <i class="bi bi-arrow-clockwise"></i> Restablecer
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   class="btn btn-warning text-dark"
-                  [disabled]="isLoading">
+                  [disabled]="isLoading"
+                >
                   <i class="bi bi-save"></i> Crear Evento
                 </button>
               </div>

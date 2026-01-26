@@ -19,12 +19,12 @@ public class VentaEntradaEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // Usuario que realizó la compra
+  // Usuario comprador
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "usuario_id")
   private UsuarioEntity usuario;
 
-  // Tipo de entrada que compró (VIP, General, etc.)
+  // Tipo de entrada comprada
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumns({
     @JoinColumn(name = "id_evento", referencedColumnName = "id_evento"),
@@ -32,16 +32,36 @@ public class VentaEntradaEntity {
   })
   private EventoTiposEntradaEntity tipoEntradaEvento;
 
-  // Fecha y hora exacta de la venta
+  // Fecha de la compra (creas la venta cuando el pago se aprueba)
   private LocalDateTime fechaVenta = LocalDateTime.now();
 
   // Cantidad comprada
   private int cantidad;
 
-  // Precio unitario al momento de la compra (snapshot)
+  // Precio unitario snapshot
   private BigDecimal precioUnitario;
 
-  // Monto total de la compra
+  // ID del pago en Mercado Pago
+  @Column(name = "payment_id")
+  private Long paymentId;
+
+  // Estado del pago (approved, pending, rejected, refunded…)
+  @Column(name = "estado_pago")
+  private String estadoPago;
+
+  // Preferencia o referencia externa (usás EVT-17 por ejemplo)
+  @Column(name = "external_reference")
+  private String externalReference;
+
+  // Fecha que Mercado Pago actualiza (para auditoría)
+  @Column(name = "fecha_actualizacion")
+  private LocalDateTime fechaActualizacion;
+
+  // Último status_detail que te manda MP (opcional pero útil)
+  @Column(name = "status_detail")
+  private String statusDetail;
+
+  // Monto total (calculado)
   public BigDecimal getMontoTotal() {
     if (precioUnitario == null) {
       return BigDecimal.ZERO;
@@ -49,4 +69,3 @@ public class VentaEntradaEntity {
     return precioUnitario.multiply(BigDecimal.valueOf(cantidad));
   }
 }
-

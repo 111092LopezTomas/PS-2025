@@ -4,7 +4,7 @@ import { EventService } from '../../services/event.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router'; // 👈 agregado
 
 @Component({
   selector: 'app-event-form',
@@ -31,15 +31,19 @@ export class EventFormComponent {
   precioEntrada: number | null = null;
   disponibilidadEntrada: number | null = null;
 
+  // id de PRODUCTOR que vamos a enviar al back (viene desde el perfil)
+  productorIdFijado: number | null = null;
+
   constructor(
     private fb: FormBuilder,
     private eventService: EventService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute     // 👈 inyectamos ActivatedRoute
   ) {
     this.eventForm = this.fb.group({
       nombreEvento: ['', [Validators.required, Validators.minLength(3)]],
       descripcion: ['', [Validators.required, Validators.minLength(10)]],
-      productorId: ['', Validators.required],
+      productorId: ['', Validators.required],          // este es el productorId REAL
       establecimientoId: ['', Validators.required],
       clasificacionId: ['', Validators.required],
       fecha: ['', Validators.required],
@@ -50,8 +54,20 @@ export class EventFormComponent {
   }
 
   ngOnInit(): void {
+    // 👇 leemos productorId desde la URL (?productorId=5)
+    this.route.queryParamMap.subscribe(params => {
+      const prodIdParam = params.get('productorId');
+      if (prodIdParam) {
+        this.productorIdFijado = +prodIdParam;
+        this.eventForm.get('productorId')?.setValue(this.productorIdFijado);
+        console.log('[EventForm] productorIdFijado desde URL =', this.productorIdFijado);
+      } else {
+        console.warn('[EventForm] No llegó productorId en query params');
+      }
+    });
+
     this.cargarArtistas();
-    this.cargarProductores();
+    this.cargarProductores();   // opcional, solo informativo
     this.cargarTiposEntrada();
     this.cargarEstablecimientos();
     this.cargarClasificaciones();
@@ -81,6 +97,7 @@ export class EventFormComponent {
     this.eventService.getProductores().subscribe({
       next: (data) => {
         this.productores = data;
+        console.log('[EventForm] productores cargados (info):', this.productores);
       },
       error: (error) => {
         console.error('Error al cargar productores:', error);
@@ -179,7 +196,6 @@ export class EventFormComponent {
 
     const tipoId = Number(this.tipoEntradaSeleccionado);
     
-    // Verificar que no esté ya agregado
     if (this.tiposEntradaSeleccionados.some(e => e.tipoEntradaId === tipoId)) {
       Swal.fire({
         icon: 'info',
@@ -190,10 +206,8 @@ export class EventFormComponent {
       return;
     }
 
-    // Buscar el nombre del tipo de entrada
     const tipoNombre = this.getNombreTipoEntrada(tipoId);
 
-    // Agregar el objeto completo
     this.tiposEntradaSeleccionados.push({
       tipoEntradaId: tipoId,
       nombre: tipoNombre,
@@ -201,7 +215,6 @@ export class EventFormComponent {
       disponibilidad: this.disponibilidadEntrada
     });
 
-    // Limpiar campos
     this.tipoEntradaSeleccionado = '';
     this.precioEntrada = null;
     this.disponibilidadEntrada = null;
@@ -224,7 +237,6 @@ export class EventFormComponent {
     );
   }
 
-  // 👇 NUEVO MÉTODO PARA CALCULAR TOTAL DE TICKETS
   calcularTotalTickets(): number {
     return this.tiposEntradaSeleccionados.reduce((total, entrada) => {
       return total + (entrada.disponibilidad || 0);
@@ -238,7 +250,6 @@ export class EventFormComponent {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
-      // Validar tamaño (máx 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
         Swal.fire({
@@ -272,7 +283,6 @@ export class EventFormComponent {
   onSubmit(): void {
     this.submitted = true;
 
-    // Validar que haya al menos un artista
     if (this.artistasSeleccionados.length === 0) {
       Swal.fire({
         icon: 'warning',
@@ -283,7 +293,6 @@ export class EventFormComponent {
       return;
     }
 
-    // Validar que haya al menos un tipo de entrada
     if (this.tiposEntradaSeleccionados.length === 0) {
       Swal.fire({
         icon: 'warning',
@@ -304,7 +313,9 @@ export class EventFormComponent {
       return;
     }
 
-    // 👇 CONFIRMACIÓN CON SWEETALERT
+    const productorIdValor = this.eventForm.get('productorId')?.value;
+    console.log('[EventForm] productorId que se enviará =', productorIdValor);
+
     const nombreEvento = this.eventForm.get('nombreEvento')?.value;
     const fecha = this.eventForm.get('fecha')?.value;
     const hora = this.eventForm.get('hora')?.value;
@@ -322,6 +333,7 @@ export class EventFormComponent {
           <p><strong>Artistas:</strong> ${this.artistasSeleccionados.length}</p>
           <p><strong>Tipos de entrada:</strong> ${this.tiposEntradaSeleccionados.length}</p>
           <p><strong>Total de tickets:</strong> ${totalTickets}</p>
+          <p><strong>Productor ID (evento):</strong> ${productorIdValor}</p>
         </div>
       `,
       icon: 'question',
@@ -354,7 +366,6 @@ export class EventFormComponent {
   }
 
   private crearEvento(): void {
-    // Mostrar loading
     Swal.fire({
       title: 'Creando evento...',
       html: 'Por favor espera un momento',
@@ -367,19 +378,17 @@ export class EventFormComponent {
 
     const formData = new FormData();
     
-    // Mapear las entradas al formato requerido por el backend
     const entradasDetalle = this.tiposEntradaSeleccionados.map(entrada => ({
       tipo: entrada.tipoEntradaId,
       precio: entrada.precio,
       disponibilidad: entrada.disponibilidad
     }));
     
-    // Crear el objeto DTO
     const dto = {
       evento: this.eventForm.get('nombreEvento')?.value,
       descripcion: this.eventForm.get('descripcion')?.value,
       artistaId: this.artistasSeleccionados,
-      productorId: this.eventForm.get('productorId')?.value,
+      productorId: this.eventForm.get('productorId')?.value,   // 👈 id de PRODUCTOR
       entradasDetalle: entradasDetalle,
       establecimientoId: this.eventForm.get('establecimientoId')?.value,
       clasificacionId: this.eventForm.get('clasificacionId')?.value,
@@ -395,8 +404,6 @@ export class EventFormComponent {
     }
    
     console.log('DTO enviado:', dto);
-    console.log('Artistas seleccionados:', this.artistasSeleccionados);
-    console.log('Entradas con precio y disponibilidad:', entradasDetalle);
 
     this.eventService.crearEvento(formData).subscribe({
       next: (response) => {
@@ -433,9 +440,12 @@ export class EventFormComponent {
 
   resetForm(): void {
     this.submitted = false;
+
     this.eventForm.reset({
-      activo: true
+      activo: true,
+      productorId: this.productorIdFijado   // dejamos fijo el productorId también al resetear
     });
+
     this.selectedFile = null;
     this.imagePreview = null;
     this.artistasSeleccionados = [];

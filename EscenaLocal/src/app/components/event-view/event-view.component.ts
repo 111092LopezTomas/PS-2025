@@ -124,7 +124,7 @@ export class EventViewComponent {
       this.router.navigate(['/checkout'], {
         queryParams: {
           eventoId: this.eventoId,
-          tipo: entrada.tipo,
+          tipo: entrada.id,
           precio: entrada.precio,
         },
       });

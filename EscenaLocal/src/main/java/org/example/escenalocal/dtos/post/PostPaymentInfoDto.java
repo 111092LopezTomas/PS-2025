@@ -13,6 +13,8 @@ public class PostPaymentInfoDto {
   private Long tipoEntradaId;
   private Integer cantidad;
   private BigDecimal precio;
+  private String externalReference;
+  private String statusDetail;
 
   public PostPaymentInfoDto(
     Long paymentId,
@@ -21,7 +23,9 @@ public class PostPaymentInfoDto {
     Long eventoId,
     Long tipoEntradaId,
     Integer cantidad,
-    BigDecimal precio
+    BigDecimal precio,
+    String externalReference,
+    String statusDetail
   ) {
     this.paymentId = paymentId;
     this.status = status;
@@ -30,5 +34,7 @@ public class PostPaymentInfoDto {
     this.tipoEntradaId = tipoEntradaId;
     this.cantidad = cantidad;
     this.precio = precio;
+    this.externalReference = externalReference;
+    this.statusDetail = statusDetail;
   }
 }

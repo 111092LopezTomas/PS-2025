@@ -3,6 +3,7 @@ import { EventService, EventGet, FiltrosEvento } from '../../services/event.serv
 import { Subject, takeUntil } from 'rxjs';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-event-list',
@@ -15,6 +16,7 @@ export class EventListComponent implements OnInit, OnDestroy {
   events: EventGet[] = [];
   todosLosEventos: EventGet[] = [];
   apiBase = 'http://localhost:8080';
+  isLogged = false;
 
   // control de filtros
   hayFiltrosActivos = false;
@@ -30,10 +32,12 @@ export class EventListComponent implements OnInit, OnDestroy {
   constructor(
     private eventService: EventService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.isLogged = this.authService.isLoggedIn();
     // 1) vemos qué ruta es
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');

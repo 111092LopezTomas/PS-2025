@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export interface EntradaDto {
+  id: number;
   tipo: string;
   precio: number;
   disponibilidad: number;

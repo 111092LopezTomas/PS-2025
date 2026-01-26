@@ -65,8 +65,10 @@ export class UserProfileComponent implements OnInit {
     this.router.navigate(['/perfil/editar']);
   }
 
-  crearEvento() {
-    this.router.navigate(['/eventos/nuevo']);
+  crearEvento(productorId: number) {
+    this.router.navigate(['/eventos/nuevo'],
+      { queryParams: { productorId } }
+    );
   }
 
   verEventos(): void {
@@ -81,6 +83,19 @@ export class UserProfileComponent implements OnInit {
 
     } else {
       this.router.navigate(['/eventos']);
+    }
+  }
+
+   verReportes(): void {
+    if (!this.usuario) return;
+
+    if (this.esProductor() && this.idProductor) {
+      this.router.navigate(
+    ['/dashboard/productor'],
+    {
+      queryParams: { productorId: this.idProductor }
+    }
+  );
     }
   }
 }

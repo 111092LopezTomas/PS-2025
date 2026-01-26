@@ -8,22 +8,37 @@ import org.example.escenalocal.repositories.EventoTiposEntradaRepository;
 import org.example.escenalocal.repositories.VentaEntradaRepository;
 import org.example.escenalocal.auth.repository.UserRepository;
 import org.example.escenalocal.services.MercadopagoService;
-import org.example.escenalocal.services.impl.MercadopagoServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl {
 
-  private final MercadopagoServiceImpl mercadopagoService;
+  // mejor por interfaz, pero te dejo como lo tenés
+  private final MercadopagoService mercadopagoService;
   private final VentaEntradaRepository ventaRepo;
   private final UserRepository usuarioRepo;
   private final EventoTiposEntradaRepository eventoTipoRepo;
 
   @Transactional
-  public void processPayment(Long paymentId) {
+  public void processPayment(Long paymentId) throws Exception {
 
+    // 0️⃣ Protegernos de paymentId null
+    if (paymentId == null) {
+      System.out.println("⚠ Webhook sin paymentId, no se puede procesar venta");
+      return;
+    }
+
+    // 1️⃣ Evitar procesar dos veces el mismo pago de MP
+    if (ventaRepo.existsByPaymentId(paymentId)) {
+      System.out.println("⚠ Venta ya registrada para paymentId=" + paymentId + ", ignorando webhook");
+      return;
+    }
+
+    // 2️⃣ Traer info desde Mercado Pago
     PostPaymentInfoDto info = mercadopagoService.getPaymentInfo(paymentId);
 
     if (info == null || info.getStatus() == null) {
@@ -32,11 +47,11 @@ public class PaymentServiceImpl {
     }
 
     if (!"approved".equalsIgnoreCase(info.getStatus())) {
-      System.out.println("⚠ Pago no aprobado: " + info.getStatus());
+      System.out.println("⚠ Pago no aprobado: " + info.getStatus() + " (paymentId=" + paymentId + ")");
       return;
     }
 
-    // 🔒 Validación CRÍTICA
+    // 3️⃣ Validación de metadata
     if (
       info.getUsuarioId() == null ||
         info.getEventoId() == null ||
@@ -49,18 +64,26 @@ public class PaymentServiceImpl {
       return;
     }
 
-    boolean yaExiste =
-      ventaRepo.existsByUsuario_IdAndTipoEntradaEvento_Id_EventoIdAndTipoEntradaEvento_Id_TiposEntradaId(
-        info.getUsuarioId(),
-        info.getEventoId(),
-        info.getTipoEntradaId()
-      );
+    // (Opcional) si igual querés evitar que el mismo usuario
+    // compre EXACTAMENTE la misma combinación (evento+tipo) más de una vez:
+        /*
+        boolean yaExisteMismaComb =
+                ventaRepo.existsByUsuario_IdAndTipoEntradaEvento_Id_EventoIdAndTipoEntradaEvento_Id_TiposEntradaId(
+                        info.getUsuarioId(),
+                        info.getEventoId(),
+                        info.getTipoEntradaId()
+                );
 
-    if (yaExiste) {
-      System.out.println("⚠ Venta ya registrada, ignorando webhook");
-      return;
-    }
+        if (yaExisteMismaComb) {
+            System.out.println("⚠ El usuario ya tiene una compra para ese evento y tipo de entrada. " +
+                               "usuarioId=" + info.getUsuarioId() +
+                               ", eventoId=" + info.getEventoId() +
+                               ", tipoEntradaId=" + info.getTipoEntradaId());
+            // si NO querés bloquear eso, simplemente eliminá este bloque
+        }
+        */
 
+    // 4️⃣ Construir la venta
     VentaEntradaEntity venta = new VentaEntradaEntity();
 
     venta.setUsuario(
@@ -77,6 +100,13 @@ public class PaymentServiceImpl {
     venta.setTipoEntradaEvento(tipoEntrada);
     venta.setCantidad(info.getCantidad());
     venta.setPrecioUnitario(info.getPrecio());
+
+    // 🔥 Campos nuevos de Mercado Pago en la entidad
+    venta.setPaymentId(paymentId);                    // o info.getPaymentId() si lo trae
+    venta.setEstadoPago(info.getStatus());            // "approved"
+    venta.setExternalReference(info.getExternalReference()); // EVT-17, etc. (agregalo al DTO)
+    venta.setFechaActualizacion(LocalDateTime.now());
+    venta.setStatusDetail(info.getStatusDetail());    // agregalo al DTO si te interesa
 
     ventaRepo.save(venta);
 

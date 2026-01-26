@@ -15,7 +15,7 @@ export interface CreatePrefCommand {
 
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
-  private base = environment.apiBase;
+  private base = environment.apiBaseNgrok;
   constructor(private http: HttpClient) {}
 
   createPreference(cmd: CreatePrefCommand) {
@@ -25,8 +25,8 @@ export class PaymentService {
     );
   }
 
-  createPreferenceForEvent(eventId: number, qty = 1, precio?: number) {
-  let url = `${environment.apiBase}/payments/create-preference/event/${eventId}?qty=${qty}`;
+  createPreferenceForEvent(eventId: number, qty: number, tipoEntradaId: number, precio?: number) {
+  let url = `${environment.apiBaseNgrok}/payments/create-preference/event/${eventId}?qty=${qty}&tipoEntradaId=${tipoEntradaId}`;
   if (precio && precio > 0) url += `&precio=${precio}`;
   return this.http.post<{ preferenceId: string; initPoint: string }>(url, {});
 }

@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.JdbcTypeCode;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -61,6 +62,10 @@ public class EventoEntity {
     @JoinColumn(name = "idProductor")
     private ProductorEntity productor;
 
+//    @Column
+//    private Integer capacidad;
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -91,4 +96,5 @@ public class EventoEntity {
 
   @Column(name = "img_nombre", length = 255, nullable = true)
   private String imagenNombre;
+
 }

@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetEntradaDto {
+  private Long id;
   private String tipo;
   private BigDecimal precio;
   private Integer disponibilidad;

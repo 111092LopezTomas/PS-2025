@@ -117,9 +117,17 @@
       <button
         *ngIf="esProductor()"
         class="btn btn-success"
-        (click)="crearEvento()"
+        (click)="crearEvento(usuario.idProductor)"
       >
         <i class="bi bi-plus-circle"></i> Crear evento
+      </button>
+
+      <button
+        *ngIf="esProductor()"
+        class="btn btn-success"
+        (click)="verReportes()"
+      >
+        <i class="bi bi-calendar-event"></i> Ver Reportes
       </button>
     </div>
   </div>

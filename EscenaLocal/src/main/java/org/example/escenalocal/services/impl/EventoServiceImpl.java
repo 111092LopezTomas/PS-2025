@@ -51,10 +51,11 @@ public class EventoServiceImpl implements EventoService {
 
     var entradasDetalle = e.getEventoTiposEntrada().stream()
       .map(ete -> {
+        var idTipoEntrada = ete.getId().getTiposEntradaId();
         var tipo = ete.getTiposEntrada() != null ? ete.getTiposEntrada().getEntrada() : null;
         var precio = ete.getPrecio();
         var disponibilidad = ete.getDisponibilidad();
-        return new GetEntradaDto(tipo, precio, disponibilidad);
+        return new GetEntradaDto(idTipoEntrada, tipo, precio, disponibilidad);
       })
       .filter(dto -> dto.getTipo() != null && !dto.getTipo().isBlank())
       .sorted(Comparator.comparing(GetEntradaDto::getTipo))
@@ -106,6 +107,7 @@ public class EventoServiceImpl implements EventoService {
 
     var entradasDetalle = e.getEventoTiposEntrada().stream()
       .map(ete -> new GetEntradaDto(
+        ete.getTiposEntrada().getId(),
         ete.getTiposEntrada().getEntrada(),
         ete.getPrecio(),
         ete.getDisponibilidad()

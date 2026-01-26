@@ -9,6 +9,7 @@ import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -116,5 +117,24 @@ public interface EventoRepository extends ListCrudRepository<EventoEntity, Long>
 """)
   List<EventoEntity> findActivosByProductorId(@Param("productorId") Long productorId);
 
+  @Query("""
+        SELECT e
+        FROM EventoEntity e
+        WHERE e.productor.id = :productorId
+          AND e.fecha BETWEEN :from AND :to
+    """)
+  List<EventoEntity> eventosDelProductorEnPeriodo(Long productorId,
+                                                  LocalDate from,
+                                                  LocalDate to);
+
+  @Query("""
+        SELECT COUNT(e)
+        FROM EventoEntity e
+        WHERE e.productor.id = :productorId
+          AND e.fecha BETWEEN :from AND :to
+    """)
+  Integer countEventosDelProductorEnPeriodo(Long productorId,
+                                            LocalDate from,
+                                            LocalDate to);
 
 }
