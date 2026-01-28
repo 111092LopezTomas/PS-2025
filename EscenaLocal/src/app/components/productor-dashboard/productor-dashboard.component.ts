@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
 import { ProductorDashboardDto } from '../../models/dashboard.model';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-productor-dashboard',
@@ -23,7 +23,7 @@ export class ProductorDashboardComponent implements OnInit {
   from: string;
   to: string;
 
-  constructor(private dashboardService: DashboardService, private route: ActivatedRoute) {
+  constructor(private dashboardService: DashboardService, private route: ActivatedRoute, private router: Router) {
     const hoy = new Date();
     const primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
 
@@ -62,4 +62,22 @@ export class ProductorDashboardComponent implements OnInit {
       }
     });
 }
+
+verGraficos(): void {
+    if (!this.productorId) {
+      console.error('No hay productorId para ver gráficos');
+      return;
+    }
+
+    this.router.navigate(
+      ['dashboard/productor/graficos'],
+      {
+        queryParams: {
+          productorId: this.productorId,
+          from: this.from,
+          to: this.to
+        }
+      }
+    );
+  }
 }

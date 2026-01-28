@@ -20,6 +20,7 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { ProductorDashboardComponent } from './components/productor-dashboard/productor-dashboard.component';
+import { GraficosProductorComponent } from './components/graficos-productor/graficos-productor.component';
 
 
 export const routes: Routes = [
@@ -51,6 +52,7 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPasswordComponent},
   { path: 'change-password', component: ChangePasswordComponent},
   { path: 'dashboard/productor', component: ProductorDashboardComponent},
+  { path: 'dashboard/productor/graficos', component: GraficosProductorComponent},
   { path: '**', redirectTo: '/eventos' }
 
 ];

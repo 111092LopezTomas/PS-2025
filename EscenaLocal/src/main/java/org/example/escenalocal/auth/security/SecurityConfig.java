@@ -65,7 +65,7 @@ public class SecurityConfig {
           "/productores/**",
           "/payments/create-preference/**",
           "/payments/webhook",
-          "/api/notificaciones",
+          "/api/notificaciones/**",
           "/dashboard/**"
         ).permitAll()
 

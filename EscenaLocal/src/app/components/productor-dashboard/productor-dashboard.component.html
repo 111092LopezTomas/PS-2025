@@ -17,6 +17,10 @@
   <div *ngIf="loading">Cargando...</div>
   <div *ngIf="error" class="error">{{ error }}</div>
 
+  <button (click)="verGraficos()">
+    Ver gráficos
+  </button>
+
   <ng-container *ngIf="dashboard && !loading">
 
     <!-- KPIs -->
