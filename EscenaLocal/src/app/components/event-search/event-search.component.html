@@ -9,6 +9,12 @@
                     {{ prov.provincia }}
         </option>
       </select>
+      <select class="form-select" [formControl]="generoControl">
+  <option value="">Todos los géneros</option>
+  <option *ngFor="let g of generos" [value]="g.genero">
+    {{ g.genero }}
+  </option>
+</select>
       
       <input 
         type="text" 

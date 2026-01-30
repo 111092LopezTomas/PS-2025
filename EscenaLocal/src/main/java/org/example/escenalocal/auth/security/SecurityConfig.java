@@ -66,7 +66,8 @@ public class SecurityConfig {
           "/payments/create-preference/**",
           "/payments/webhook",
           "/api/notificaciones/**",
-          "/dashboard/**"
+          "/dashboard/**",
+          "/tickets/**"
         ).permitAll()
 
         // Cualquier otra cosa requiere estar autenticado

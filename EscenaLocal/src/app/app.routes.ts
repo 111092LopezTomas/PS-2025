@@ -21,6 +21,7 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { ProductorDashboardComponent } from './components/productor-dashboard/productor-dashboard.component';
 import { GraficosProductorComponent } from './components/graficos-productor/graficos-productor.component';
+import { TicketsHistorialComponent } from './components/tickets-historial/tickets-historial.component';
 
 
 export const routes: Routes = [
@@ -53,6 +54,7 @@ export const routes: Routes = [
   { path: 'change-password', component: ChangePasswordComponent},
   { path: 'dashboard/productor', component: ProductorDashboardComponent},
   { path: 'dashboard/productor/graficos', component: GraficosProductorComponent},
+  { path: 'historial', component: TicketsHistorialComponent, canActivate: [AuthGuard]},
   { path: '**', redirectTo: '/eventos' }
 
 ];

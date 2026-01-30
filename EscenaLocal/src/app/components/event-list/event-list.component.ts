@@ -20,7 +20,7 @@ export class EventListComponent implements OnInit, OnDestroy {
 
   // control de filtros
   hayFiltrosActivos = false;
-  filtroActual: FiltrosEvento = { busqueda: '', provincia: '' };
+  filtroActual: FiltrosEvento = { busqueda: '', provincia: '', genero: '' };
 
   // para saber si estamos viendo eventos de un productor o de un artista
   vistaPorProductor = false;
@@ -38,6 +38,7 @@ export class EventListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLogged = this.authService.isLoggedIn();
+
     // 1) vemos qué ruta es
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -61,16 +62,21 @@ export class EventListComponent implements OnInit, OnDestroy {
       }
     });
 
-    // 2) escuchamos cambios de filtros (esto sigue igual)
+    // 2) escuchamos cambios de filtros
     this.eventService.filtros$
       .pipe(takeUntil(this.destroy$))
       .subscribe(filtros => {
         this.filtroActual = filtros;
-        this.hayFiltrosActivos = !!(filtros.busqueda || filtros.provincia);
+
+        this.hayFiltrosActivos = !!(
+          filtros.busqueda ||
+          filtros.provincia ||
+          filtros.genero
+        );
 
         // solo filtramos cuando tenemos listado base
         if (this.todosLosEventos.length > 0 && !this.vistaPorProductor && !this.vistaPorArtista) {
-          this.filtrarEventos(filtros.busqueda, filtros.provincia);
+          this.filtrarEventos(filtros.busqueda, filtros.provincia, filtros.genero);
         }
       });
   }
@@ -88,12 +94,26 @@ export class EventListComponent implements OnInit, OnDestroy {
   cargarEventos(): void {
     this.eventService.getEvents().subscribe({
       next: (data) => {
+        console.log('EVENTOS CARGADOS:', data);
         this.todosLosEventos = data;
         this.events = data;
 
-        const filtrosActuales = this.eventService.getFiltrosActuales?.() || { busqueda: '', provincia: '' };
-        if (filtrosActuales.busqueda || filtrosActuales.provincia) {
-          this.filtrarEventos(filtrosActuales.busqueda, filtrosActuales.provincia);
+        const filtrosActuales = this.eventService.getFiltrosActuales?.() || {
+          busqueda: '',
+          provincia: '',
+          genero: ''
+        };
+
+        if (
+          filtrosActuales.busqueda ||
+          filtrosActuales.provincia ||
+          filtrosActuales.genero
+        ) {
+          this.filtrarEventos(
+            filtrosActuales.busqueda,
+            filtrosActuales.provincia,
+            filtrosActuales.genero
+          );
         }
       },
       error: (err) => {
@@ -108,7 +128,6 @@ export class EventListComponent implements OnInit, OnDestroy {
   private cargarEventosPorProductor(productorId: number): void {
     this.eventService.getEventsByProductor(productorId).subscribe({
       next: (data) => {
-        // en este caso NO aplicamos los filtros globales porque ya viene filtrado por productor
         this.events = data;
         this.todosLosEventos = data;
       },
@@ -137,37 +156,84 @@ export class EventListComponent implements OnInit, OnDestroy {
   // FILTROS
   // ======================
 
-  private filtrarEventos(busqueda: string, provincia: string): void {
-    if (!this.todosLosEventos || this.todosLosEventos.length === 0) {
-      this.events = [];
-      return;
-    }
+  private filtrarEventos(
+  busqueda: string,
+  provincia: string,
+  genero?: any  
+): void {
+  if (!this.todosLosEventos || this.todosLosEventos.length === 0) {
+    this.events = [];
+    return;
+  }
 
-    let resultado = [...this.todosLosEventos];
+  let resultado = [...this.todosLosEventos];
 
-    if (provincia) {
-      resultado = resultado.filter(e => String(e.provincia) === provincia);
-    }
+  // Filtro por provincia
+  if (provincia) {
+    resultado = resultado.filter(e => String(e.provincia) === provincia);
+  }
 
-    if (busqueda) {
-      const b = busqueda.toLowerCase();
-      resultado = resultado.filter(e => {
-        const artistas = Array.isArray(e.artistas)
-          ? e.artistas.join(' ')
-          : String(e.artistas || '');
+  // 🎧 Filtro por género musical
+  let generoTexto = '';
 
-        return artistas.toLowerCase().includes(b) ||
-               String(e.evento || '').toLowerCase().includes(b) ||
-               String(e.establecimiento || '').toLowerCase().includes(b) ||
-               String(e.ciudad || '').toLowerCase().includes(b);
-      });
-    }
+  // si viene como string (lo ideal)
+  if (typeof genero === 'string') {
+    generoTexto = genero;
+  }
+  // si por algún motivo viene como objeto { nombre: 'Rock', ... }
+  else if (genero && typeof genero === 'object' && 'nombre' in genero) {
+    generoTexto = (genero as any).nombre;
+  }
 
-    this.events = resultado;
+  const generoFiltro = generoTexto.trim().toLowerCase();
+
+  if (generoFiltro) {
+    resultado = resultado.filter(e => {
+      const generoEvento = (e.genero || '').trim().toLowerCase();
+
+      // DEBUG opcional:
+      console.log('DEBUG género filtro:', generoFiltro, ' – evento:', generoEvento);
+
+      if (!generoEvento) {
+        return false;
+      }
+
+      // Por si en el evento viene algo tipo "Rock / Pop"
+      const generosEvento = generoEvento
+        .split(/[\/,;]+/)
+        .map(g => g.trim())
+        .filter(g => g.length > 0);
+
+      return generosEvento.some(g =>
+        g === generoFiltro || g.includes(generoFiltro)
+      );
+    });
+  }
+
+  // Filtro por búsqueda de texto
+  if (busqueda) {
+    const b = busqueda.toLowerCase();
+    resultado = resultado.filter(e => {
+      const artistas = Array.isArray(e.artistas)
+        ? e.artistas.join(' ')
+        : String(e.artistas || '');
+
+      return artistas.toLowerCase().includes(b) ||
+             String(e.evento || '').toLowerCase().includes(b) ||
+             String(e.establecimiento || '').toLowerCase().includes(b) ||
+             String(e.ciudad || '').toLowerCase().includes(b);
+    });
+  }
+
+  this.events = resultado;
   }
 
   limpiarFiltros(): void {
-    this.eventService.actualizarFiltros({ busqueda: '', provincia: '' });
+    this.eventService.actualizarFiltros({
+      busqueda: '',
+      provincia: '',
+      genero: ''
+    });
   }
 
   VerEvento(id: number): void {

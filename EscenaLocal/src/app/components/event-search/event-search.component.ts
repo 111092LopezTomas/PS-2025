@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { EventService } from '../../services/event.service';
+import { EventService, GeneroMusical } from '../../services/event.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { CommonModule } from '@angular/common';
 
@@ -10,11 +10,17 @@ import { CommonModule } from '@angular/common';
   templateUrl: './event-search.component.html',
   styleUrl: './event-search.component.css'
 })
-
 export class EventSearchComponent implements OnInit {
+  // búsqueda por texto
   searchControl = new FormControl('');
+
+  // filtro por provincia
   provinciaControl = new FormControl('');
   provincias: any[] = [];
+
+  // 🎧 filtro por género musical
+  generoControl = new FormControl('');
+  generos: GeneroMusical[] = []; // se cargan desde el backend
 
   constructor(private eventService: EventService) {}
 
@@ -31,13 +37,20 @@ export class EventSearchComponent implements OnInit {
     this.provinciaControl.valueChanges
       .subscribe(() => this.notificar());
 
+    // Género sin debounce
+    this.generoControl.valueChanges
+      .subscribe(() => this.notificar());
+
     this.cargarProvincias();
+    this.cargarGeneros();  // 👈 importante
   }
 
   private notificar(): void {
     this.eventService.actualizarFiltros({
       busqueda: this.searchControl.value || '',
-      provincia: this.provinciaControl.value || ''
+      provincia: this.provinciaControl.value || '',
+      // 👇 nombre correcto según tu interface FiltrosEvento
+      genero: this.generoControl.value || ''
     });
   }
 
@@ -48,6 +61,18 @@ export class EventSearchComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al cargar provincias:', error);
+      }
+    });
+  }
+
+  // 🔥 NUEVO: carga de géneros desde el backend
+  cargarGeneros(): void {
+    this.eventService.getGenerosMusicales().subscribe({
+      next: (data) => {
+        this.generos = data || [];
+      },
+      error: (error) => {
+        console.error('Error al cargar géneros musicales:', error);
       }
     });
   }

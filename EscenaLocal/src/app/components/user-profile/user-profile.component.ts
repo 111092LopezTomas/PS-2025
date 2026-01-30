@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { UsuarioService } from '../../services/usuario.service';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
+import { TicketService } from '../../services/ticket.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -61,6 +62,10 @@ export class UserProfileComponent implements OnInit {
     return this.usuario?.rol === 'ROL_PRODUCTOR';
   }
 
+  esUsuario(): boolean {
+    return this.usuario?.rol === 'ROL_USUARIO';
+  }
+
   editarPerfil() {
     this.router.navigate(['/perfil/editar']);
   }
@@ -98,4 +103,8 @@ export class UserProfileComponent implements OnInit {
   );
     }
   }
+
+  verEntradas(): void {
+  this.router.navigate(['/historial']);
+}
 }

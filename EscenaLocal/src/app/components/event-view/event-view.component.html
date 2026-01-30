@@ -43,7 +43,7 @@
       <div class="event-header mb-4">
         <span class="badge bg-primary mb-2">{{ evento.genero }}</span>
         <h1 class="display-4 fw-bold mb-3">{{ evento.evento }}</h1>
-        <h3 class="text-muted mb-4">{{ evento.artistas }}</h3>
+        <h3 class="text-muted mb-4">{{ evento.artistas?.join(', ') }}</h3>
       </div>
 
       <!-- Detalles Principales -->
@@ -139,4 +139,50 @@
             </div>
           </div>
         </div>
+        <!-- EVENTOS RELACIONADOS -->
+<div class="row mt-5">
+  <div class="col-12">
+    <h4 class="fw-bold mb-3">Eventos relacionados</h4>
+
+    <div *ngIf="loadingRelated" class="text-muted">
+      Cargando eventos relacionados...
+    </div>
+
+    <div *ngIf="!loadingRelated && relatedEvents.length === 0" class="text-muted">
+      No encontramos eventos relacionados.
+    </div>
+
+    <div class="row" *ngIf="!loadingRelated && relatedEvents.length > 0">
+      <div class="col-md-6 col-lg-3 mb-4" *ngFor="let e of relatedEvents">
+        <div class="card h-100 shadow-sm border-0">
+          <img
+            class="card-img-top"
+            [src]="apiBase + '/eventos/' + e.id + '/imagen'"
+            alt="imagen evento relacionado"
+            style="height: 160px; object-fit: cover;"
+          />
+
+          <div class="card-body">
+            <span class="badge bg-primary mb-2">{{ e.genero }}</span>
+            <h6 class="fw-bold mb-1">{{ e.evento }}</h6>
+
+            <div class="small text-muted mb-2">
+              {{ e.establecimiento }} • {{ e.ciudad }}
+            </div>
+
+            <div class="small" *ngIf="e.artistas?.length">
+              <strong>Artistas:</strong> {{ e.artistas.join(', ') }}
+            </div>
+          </div>
+
+          <div class="card-footer bg-transparent border-0 pt-0">
+            <button class="btn btn-outline-primary btn-sm w-100" (click)="verEventoRelacionado(e.id)">
+              Ver evento
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
       </div>

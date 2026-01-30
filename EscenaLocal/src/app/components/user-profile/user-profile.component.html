@@ -97,7 +97,7 @@
     <!-- 🔹 Botones de acción -->
     <div class="d-flex justify-content-end flex-wrap gap-2 mt-3">
       <!-- Botón Ver eventos (para todos los usuarios) -->
-      <button class="btn btn-outline-secondary" (click)="verEventos()">
+      <button *ngIf="esProductor() || esArtista()"class="btn btn-outline-secondary" (click)="verEventos()">
         <i class="bi bi-calendar-event"></i> Ver eventos
       </button>
 
@@ -129,6 +129,9 @@
       >
         <i class="bi bi-calendar-event"></i> Ver Reportes
       </button>
+      <button *ngIf="esUsuario()" class="btn btn-outline-primary" (click)="verEntradas()">
+  Mis entradas
+</button>
     </div>
   </div>
 </div>

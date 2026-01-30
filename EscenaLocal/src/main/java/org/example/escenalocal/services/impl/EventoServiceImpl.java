@@ -66,6 +66,19 @@ public class EventoServiceImpl implements EventoService {
     var ciudad = barrio.getCiudad();
     var provincia = ciudad.getProvincia();
 
+    var genero = e.getArtistasEvento().stream()
+      .map(ae -> ae.getArtista())
+      .filter(Objects::nonNull)
+      .map(a -> {
+        if (a.getGenero() != null) {
+          return a.getGenero().getGenero();
+        }
+        return null;
+      })
+      .filter(Objects::nonNull)
+      .findFirst()
+      .orElse(null);
+
     return new GetEventoDto(
       e.getId(),
       e.getActivo(),
@@ -84,7 +97,9 @@ public class EventoServiceImpl implements EventoService {
       est.getDireccion(),
       est.getBarrio().getBarrio(),
       ciudad.getCiudad(),
-      provincia.getProvincia()
+      provincia.getProvincia(),
+      genero
+
     );
   }
 
@@ -120,6 +135,18 @@ public class EventoServiceImpl implements EventoService {
     var barrio = est.getBarrio();
     var ciudad = barrio.getCiudad();
     var provincia = ciudad.getProvincia();
+    var genero = e.getArtistasEvento().stream()
+      .map(ae -> ae.getArtista())
+      .filter(Objects::nonNull)
+      .map(a -> {
+        if (a.getGenero() != null) {
+          return a.getGenero().getGenero();
+        }
+        return null;
+      })
+      .filter(Objects::nonNull)
+      .findFirst()
+      .orElse(null);
 
     return new GetEventoDto(
       e.getId(),
@@ -139,7 +166,8 @@ public class EventoServiceImpl implements EventoService {
       est.getDireccion(),
       est.getBarrio().getBarrio(),
       ciudad.getCiudad(),
-      provincia.getProvincia()
+      provincia.getProvincia(),
+      genero
     );
   }
 

@@ -1,0 +1,63 @@
+<div class="container my-4">
+
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h2 class="mb-0">Mis entradas</h2>
+
+    <a class="btn btn-outline-secondary" routerLink="/perfil">
+      Volver al perfil
+    </a>
+  </div>
+
+  <div *ngIf="loading" class="text-muted">Cargando...</div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && misEntradas.length === 0" class="alert alert-info">
+    Todavía no compraste entradas.
+  </div>
+
+  <div class="table-responsive" *ngIf="!loading && !error && misEntradas.length > 0">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Evento</th>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Cant.</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let x of misEntradas; trackBy: trackByVentaId">
+          <td>{{ x.eventoNombre }}</td>
+          <td>{{ x.fechaEvento | date:'mediumDate' }}</td>
+          <td>{{ x.tipoEntrada }}</td>
+          <td>{{ x.cantidad }}</td>
+          <td>{{ x.montoTotal | currency:'ARS' }}</td>
+
+          <td>
+            <span class="badge bg-success" *ngIf="x.estadoPago === 'approved'">Aprobado</span>
+            <span class="badge bg-warning text-dark" *ngIf="x.estadoPago === 'pending'">Pendiente</span>
+            <span class="badge bg-danger" *ngIf="x.estadoPago && x.estadoPago !== 'approved' && x.estadoPago !== 'pending'">
+              {{ x.estadoPago }}
+            </span>
+            <span class="badge bg-secondary" *ngIf="!x.estadoPago">Sin estado</span>
+          </td>
+
+          <td class="text-end">
+            <a class="btn btn-sm btn-primary" [routerLink]="['/evento', x.eventoId]">
+              Ver evento
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+

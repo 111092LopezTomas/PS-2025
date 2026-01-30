@@ -32,5 +32,6 @@ public class GetEventoDto {
   String barrio;
   String ciudad;
   String provincia;
+  String genero;
 
 }

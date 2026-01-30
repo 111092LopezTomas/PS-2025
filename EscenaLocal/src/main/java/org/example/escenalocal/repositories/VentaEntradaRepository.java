@@ -1,11 +1,13 @@
 package org.example.escenalocal.repositories;
 
+import org.example.escenalocal.dashboard.EntradaCompradaDto;
 import org.example.escenalocal.dashboard.EntradasPorTipoDto;
 import org.example.escenalocal.dashboard.EventoRankingDto;
 import org.example.escenalocal.dashboard.PuntoVentaDiaDto;
 import org.example.escenalocal.entities.VentaEntradaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -116,4 +118,29 @@ public interface VentaEntradaRepository
   List<VentaEntradaEntity> ventasPorProductorEnPeriodo(Long productorId,
                                                        LocalDateTime from,
                                                        LocalDateTime to);
+
+  @Query("""
+  SELECT new org.example.escenalocal.dashboard.EntradaCompradaDto(
+      v.id,
+      e.id,
+      e.evento,
+      e.fecha,
+      est.establecimiento,
+      te.entrada,
+      v.cantidad,
+      v.precioUnitario,
+      v.estadoPago,
+      v.paymentId,
+      v.externalReference,
+      v.fechaVenta
+  )
+  FROM VentaEntradaEntity v
+  JOIN v.tipoEntradaEvento ete
+  JOIN ete.evento e
+  LEFT JOIN e.establecimiento est
+  JOIN ete.tiposEntrada te
+  WHERE v.usuario.id = :usuarioId
+  ORDER BY v.fechaVenta DESC
+""")
+  List<EntradaCompradaDto> historialComprasPorUsuario(@Param("usuarioId") Long usuarioId);
 }

@@ -42,6 +42,12 @@ export interface EventGet {
 export interface FiltrosEvento {
   busqueda: string;
   provincia: string;
+  genero: string;
+}
+
+export interface GeneroMusical {
+  id: number;
+  genero: string;
 }
 
 @Injectable({
@@ -53,7 +59,8 @@ export class EventService {
   // Sistema de filtros
   private filtrosSubject = new BehaviorSubject<FiltrosEvento>({
     busqueda: '',
-    provincia: ''
+    provincia: '',
+    genero: ''
   });
   public filtros$: Observable<FiltrosEvento> = this.filtrosSubject.asObservable();
 
@@ -96,6 +103,10 @@ export class EventService {
   getProvincias(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/provincias/all`);
   }
+
+  getGenerosMusicales(): Observable<GeneroMusical[]> {
+  return this.http.get<GeneroMusical[]>(`${this.apiUrl}/generos/all`);
+}
 
   crearEvento(evento: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/eventos/nuevo`, evento);

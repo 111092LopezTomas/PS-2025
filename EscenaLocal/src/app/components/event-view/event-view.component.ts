@@ -18,7 +18,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'assets/leaflet/marker-shadow.png',
 });
 
-
 @Component({
   selector: 'app-event-view',
   imports: [CommonModule],
@@ -31,6 +30,7 @@ export class EventViewComponent {
     evento: '',
     entradasDetalle: [],
   } as any;
+
   loading: boolean = true;
   error: string = '';
   eventoId: number = 0;
@@ -40,6 +40,9 @@ export class EventViewComponent {
 
   disponibilidad: number = 0;
   precio: number = 0;
+
+  relatedEvents: EventGet[] = [];
+  loadingRelated: boolean = false;
 
   constructor(
     private eventService: EventService,
@@ -64,11 +67,17 @@ export class EventViewComponent {
   cargarEvento(): void {
     this.loading = true;
     this.error = '';
+    this.mapaInicializado = false;
+
+    // reset relacionados cuando cambia el evento
+    this.relatedEvents = [];
 
     this.eventService.getEventById(this.eventoId).subscribe({
       next: (data) => {
         this.evento = data;
         this.loading = false;
+
+        // mapa
         if (data.direccion && !this.mapaInicializado) {
           this.mostrarMapa(
             this.evento.direccion.toString(),
@@ -76,6 +85,8 @@ export class EventViewComponent {
             this.evento.ciudad.toString()
           );
         }
+
+        this.cargarRelacionados();
       },
       error: (err) => {
         this.error =
@@ -86,9 +97,90 @@ export class EventViewComponent {
     });
   }
 
+  private cargarRelacionados(): void {
+    // si todavía no hay un evento válido, no hacemos nada
+    if (!this.evento || !this.evento.id) return;
+
+    this.loadingRelated = true;
+
+    this.eventService.getEvents().subscribe({
+      next: (todos) => {
+        const relacionados = this.calcularRelacionados(this.evento, todos);
+        this.relatedEvents = relacionados.slice(0, 8); // TOP 8
+        this.loadingRelated = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar eventos relacionados:', err);
+        this.relatedEvents = [];
+        this.loadingRelated = false;
+      }
+    });
+  }
+
+  private calcularRelacionados(actual: EventGet, todos: EventGet[]): EventGet[] {
+    const actualId = actual.id;
+
+    const estId = actual.establecimientoId;
+    const generoActual = (actual.genero || '').trim().toLowerCase();
+
+    const artistasActual = (actual.artistas || [])
+      .map(a => (a || '').trim().toLowerCase())
+      .filter(a => a.length > 0);
+
+    const candidatos = (todos || [])
+      .filter(e => e && e.id !== actualId)
+      // si querés mostrar solo activos:
+      .filter(e => e.activo === true || e.activo === (true as any));
+
+    const scored = candidatos.map(e => {
+      const matchEst = e.establecimientoId === estId;
+
+      const generoE = (e.genero || '').trim().toLowerCase();
+      const matchGenero =
+        generoActual && generoE
+          ? (generoE === generoActual || generoE.includes(generoActual) || generoActual.includes(generoE))
+          : false;
+
+      const artistasE = (e.artistas || [])
+        .map(a => (a || '').trim().toLowerCase())
+        .filter(a => a.length > 0);
+
+      const comunes = artistasActual.length > 0 && artistasE.length > 0
+        ? artistasActual.filter(a => artistasE.includes(a)).length
+        : 0;
+
+      const matchArtista = comunes > 0;
+
+      // score (ajustable)
+      let score = 0;
+      if (matchEst) score += 3;
+      if (matchGenero) score += 2;
+      if (matchArtista) score += 4;
+
+      return { e, score, comunes };
+    });
+
+    // al menos 1 criterio
+    const filtrados = scored.filter(x => x.score > 0);
+
+    // orden: score desc, luego artistas comunes desc, luego fecha desc (opcional)
+    filtrados.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.comunes !== a.comunes) return b.comunes - a.comunes;
+
+      const da = a.e.fecha ? new Date(a.e.fecha as any).getTime() : 0;
+      const db = b.e.fecha ? new Date(b.e.fecha as any).getTime() : 0;
+      return db - da;
+    });
+
+    return filtrados.map(x => x.e);
+  }
+
   mostrarMapa(direccion: string, establecimiento: string, ciudad: string): void {
     // Llamada a Photon para obtener coordenadas
-    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(direccion + ', ' + ciudad)}&limit=1&lang=en`;
+    const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(
+      direccion + ', ' + ciudad
+    )}&limit=1&lang=en`;
 
     fetch(url)
       .then((res) => res.json())
@@ -134,6 +226,10 @@ export class EventViewComponent {
     }
   }
 
+  verEventoRelacionado(id: number): void {
+    this.router.navigate(['/evento', id]);
+  }
+
   reintentar(): void {
     this.cargarEvento();
   }
@@ -163,12 +259,11 @@ export class EventViewComponent {
     return entrada.disponibilidad * 1.5; // Estimación para la barra de progreso
   }
 
-  verEstablecimiento(id: number):void {
+  verEstablecimiento(id: number): void {
     this.router.navigate(['/establecimientos', id]);
   }
 
   volver() {
     this.router.navigate(['/eventos']);
   }
-
 }
