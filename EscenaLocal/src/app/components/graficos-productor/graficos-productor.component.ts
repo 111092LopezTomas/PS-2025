@@ -117,15 +117,17 @@ export class GraficosProductorComponent implements OnInit {
 
   // Formato de fecha para eje X (dd/MM)
   formatFechaEjeX = (value: string): string => {
-    // value puede ser '2026-01-15'
-    const d = new Date(value);
-    if (!isNaN(d.getTime())) {
-      const day = d.getDate().toString().padStart(2, '0');
-      const month = (d.getMonth() + 1).toString().padStart(2, '0');
-      return `${day}/${month}`;
-    }
-    // Si no se puede parsear, devolvemos tal cual
-    return value;
+    // Esperado: 'YYYY-MM-DD'
+  if (!value) return '';
+
+  const parts = value.split('-');
+  if (parts.length === 3) {
+    const [yyyy, mm, dd] = parts;
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  // fallback si viene en otro formato
+  return value;
   };
 
   // Formato moneda ARS para valores numéricos

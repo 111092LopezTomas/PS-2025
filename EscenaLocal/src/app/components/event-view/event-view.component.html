@@ -43,7 +43,7 @@
       <div class="event-header mb-4">
         <span class="badge bg-primary mb-2">{{ evento.genero }}</span>
         <h1 class="display-4 fw-bold mb-3">{{ evento.evento }}</h1>
-        <h3 class="text-muted mb-4">{{ evento.artistas?.join(', ') }}</h3>
+        <h3 class="text-muted mb-4">{{ evento.artistas.join(', ') }}</h3>
       </div>
 
       <!-- Detalles Principales -->
@@ -86,7 +86,7 @@
       </div>
 
       <!-- Mapa del evento -->
-      <div *ngIf="evento?.direccion" style="margin-top: 20px;">
+      <div *ngIf="evento.direccion" style="margin-top: 20px;">
         <h3>Ubicación del evento</h3>
         <div id="map" style="height: 400px; border-radius: 10px;"></div>
       </div>
@@ -170,7 +170,7 @@
               {{ e.establecimiento }} • {{ e.ciudad }}
             </div>
 
-            <div class="small" *ngIf="e.artistas?.length">
+            <div class="small" *ngIf="e.artistas.length">
               <strong>Artistas:</strong> {{ e.artistas.join(', ') }}
             </div>
           </div>
