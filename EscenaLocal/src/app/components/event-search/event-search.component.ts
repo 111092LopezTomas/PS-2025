@@ -42,15 +42,15 @@ export class EventSearchComponent implements OnInit {
       .subscribe(() => this.notificar());
 
     this.cargarProvincias();
-    this.cargarGeneros();  // 👈 importante
+    this.cargarGeneros();
   }
 
   private notificar(): void {
     this.eventService.actualizarFiltros({
       busqueda: this.searchControl.value || '',
       provincia: this.provinciaControl.value || '',
-      // 👇 nombre correcto según tu interface FiltrosEvento
       genero: this.generoControl.value || ''
+      
     });
   }
 
