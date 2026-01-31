@@ -12,7 +12,6 @@ import { TicketService } from '../../services/ticket.service';
   templateUrl: './user-profile.component.html',
 })
 export class UserProfileComponent implements OnInit {
-
   usuario: any = null;
   idArtista: number | null = null;
   idProductor: number | null = null;
@@ -23,7 +22,7 @@ export class UserProfileComponent implements OnInit {
   constructor(
     private usuarioService: UsuarioService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -50,7 +49,7 @@ export class UserProfileComponent implements OnInit {
       error: () => {
         this.error = 'No se pudo cargar el perfil';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -71,9 +70,7 @@ export class UserProfileComponent implements OnInit {
   }
 
   crearEvento(productorId: number) {
-    this.router.navigate(['/eventos/nuevo'],
-      { queryParams: { productorId } }
-    );
+    this.router.navigate(['/eventos/nuevo'], { queryParams: { productorId } });
   }
 
   verEventos(): void {
@@ -82,29 +79,30 @@ export class UserProfileComponent implements OnInit {
     // 🔹 ahora usamos idArtista o idProductor del DTO
     if (this.esProductor() && this.idProductor) {
       this.router.navigate([`/eventos/productor/${this.idProductor}`]);
-
     } else if (this.esArtista() && this.idArtista) {
       this.router.navigate([`/eventos/artista/${this.idArtista}`]);
-
     } else {
       this.router.navigate(['/eventos']);
     }
   }
 
-   verReportes(): void {
+  verReportes(): void {
     if (!this.usuario) return;
 
     if (this.esProductor() && this.idProductor) {
-      this.router.navigate(
-    ['/dashboard/productor'],
-    {
-      queryParams: { productorId: this.idProductor }
+      this.router.navigate(['/dashboard/productor'], {
+        queryParams: { productorId: this.idProductor },
+      });
     }
-  );
+
+    if (this.esArtista() && this.idArtista) {
+      this.router.navigate(['/dashboard/artista'], {
+        queryParams: { artistaId: this.idArtista },
+      });
     }
   }
 
   verEntradas(): void {
-  this.router.navigate(['/historial']);
-}
+    this.router.navigate(['/historial']);
+  }
 }

@@ -1,6 +1,7 @@
 package org.example.escenalocal.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.example.escenalocal.dashboard.ArtistaDashboardDto;
 import org.example.escenalocal.dashboard.ProductorDashboardDto;
 import org.example.escenalocal.services.DashboardService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/dashboard")
@@ -24,5 +26,14 @@ public class DashboardController {
     @RequestParam Long productorId
   ) {
     return dashboardService.getDashboardProductor(productorId, from, to);
+  }
+
+  @GetMapping("/artista")
+  public ArtistaDashboardDto get(@RequestParam Long artistaId,
+                                 @RequestParam String from,
+                                 @RequestParam String to) {
+    LocalDateTime fromDt = LocalDate.parse(from).atStartOfDay();
+    LocalDateTime toDt = LocalDate.parse(to).atTime(23, 59, 59);
+    return dashboardService.dashboardArtista(artistaId, fromDt, toDt);
   }
 }

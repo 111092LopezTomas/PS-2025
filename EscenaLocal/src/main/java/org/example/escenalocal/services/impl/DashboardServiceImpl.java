@@ -283,4 +283,32 @@ public class DashboardServiceImpl implements DashboardService {
 
     return dto;
   }
+
+  public ArtistaDashboardDto dashboardArtista(Long artistaId, LocalDateTime from, LocalDateTime to) {
+
+    Long totalEntradas = ventaRepo.totalEntradasPorArtista(artistaId, from, to);
+    List<PuntoCantidadDiaDto> porDia = ventaRepo.entradasPorDiaArtista(artistaId, from, to);
+    List<EventoAsistenciaDto> ranking = ventaRepo.rankingEventosPorArtista(artistaId, from, to);
+    List<EntradasPorTipoDto> porTipo = ventaRepo.entradasPorTipoArtista(artistaId, from, to);
+
+    long totalEventos = ranking.size();
+    double promedio = totalEventos > 0 ? (double) totalEntradas / totalEventos : 0.0;
+
+    String mejorNombre = null;
+    Long mejorEntradas = 0L;
+    if (!ranking.isEmpty()) {
+      mejorNombre = ranking.get(0).getEventoNombre();
+      mejorEntradas = ranking.get(0).getEntradasVendidas();
+    }
+
+    ArtistaKpisDto kpis = new ArtistaKpisDto(
+      totalEntradas,
+      totalEventos,
+      promedio,
+      mejorNombre,
+      mejorEntradas
+    );
+
+    return new ArtistaDashboardDto(kpis, porDia, ranking, porTipo);
+  }
 }

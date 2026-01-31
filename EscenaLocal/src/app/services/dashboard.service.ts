@@ -22,4 +22,10 @@ getDashboardProductor(from: string, to: string, productorId: number): Observable
   return this.http.get<ProductorDashboardDto>(`${this.apiUrl}/dashboard/productor`, { params });
 }
 
+getDashboardArtista(from: string, to: string, artistaId: number) {
+  return this.http.get<any>(
+    `${this.apiUrl}/dashboard/artista?from=${from}&to=${to}&artistaId=${artistaId}`
+  );
+}
+
 }
