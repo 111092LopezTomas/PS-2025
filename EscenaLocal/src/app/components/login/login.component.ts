@@ -17,6 +17,7 @@ export class LoginComponent implements AfterViewInit {
 
   model: AuthRequest = { username: '', password: '', rol: 'ROL_USUARIO' };
   error: string | null = null;
+
   @ViewChild('usernameInput') usernameInput!: ElementRef<HTMLInputElement>;
 
   constructor(
@@ -26,10 +27,7 @@ export class LoginComponent implements AfterViewInit {
   ) {}
 
   ngAfterViewInit(): void {
-    // Foco al cargar el componente
     this.focusInput();
-
-    // También al volver al login
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => this.focusInput());
@@ -42,14 +40,13 @@ export class LoginComponent implements AfterViewInit {
   }
 
   onSubmit() {
+    console.log('ENTRÉ AL ONSUBMIT');
     this.error = null;
 
     this.authService.login(this.model).subscribe({
       next: (res) => {
-        localStorage.setItem('jwt', res.token);
         localStorage.setItem('usuarioId', res.userId.toString());
 
-        // 🔹 Pedir la imagen apenas se loguea
         this.usuarioService.obtenerImagen(res.userId).subscribe({
           next: (blob) => {
             const objectURL = URL.createObjectURL(blob);
@@ -59,7 +56,6 @@ export class LoginComponent implements AfterViewInit {
             localStorage.removeItem('imagenUsuario');
           },
           complete: () => {
-            // Redirigir al home al finalizar la carga de imagen
             this.router.navigate(['/']);
           }
         });
@@ -70,12 +66,7 @@ export class LoginComponent implements AfterViewInit {
     });
   }
 
-  irAlLogin(event: Event) {
-    event.preventDefault(); // evita que el # recargue la página
-    this.router.navigate(['/login']);
-  }
-
   irARegistrar() {
-    this.router.navigate(['/login/nuevo']);
+    this.router.navigate(['/register']);
   }
 }

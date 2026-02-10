@@ -18,6 +18,7 @@ export class CheckoutComponent implements AfterViewInit {
   loading = false;
   error?: string;
   prefId?: string;
+  tipoEntradaId: number = 1 ;
   initPoint?: string;
   eventId = 0;
   precio?: number;
@@ -68,7 +69,7 @@ export class CheckoutComponent implements AfterViewInit {
       // 1) Crear preferencia en tu backend
       console.log('[MP] Creando preferencia para evento', this.eventId);
       const res = await this.payments
-        .createPreferenceForEvent(this.eventId, this.cantidad, this.precio)
+        .createPreferenceForEvent(this.eventId, this.tipoEntradaId, this.cantidad, this.precio)
         .toPromise();
 
       if (!res) throw new Error('Sin respuesta del backend al crear preferencia');

@@ -63,11 +63,11 @@ public class MercadoPagoGateway implements PaymentGateway {
       .backUrls(backUrls)
       .externalReference(cmd.externalReference())
       .metadata(Map.of(
-        "usuarioId", String.valueOf(cmd.usuarioId()),
-        "eventoId", String.valueOf(cmd.eventoId()),
-        "tipoEntradaId", cmd.tipoEntradaId(),
+        "usuarioId", cmd.usuarioId(),
+        "eventoId", cmd.eventoId(),
+        "tipoEntradaId", cmd.items().get(0).id(),
         "cantidad", cmd.items().get(0).quantity(),
-        "precio", cmd.items().get(0).unitPrice().toPlainString()
+        "precio", cmd.items().get(0).unitPrice()
       ));
 
     // Auto return solo HTTPS
@@ -80,14 +80,17 @@ public class MercadoPagoGateway implements PaymentGateway {
       builder.notificationUrl(b + "/payments/webhook");
     }
 
+    System.out.println("🧾 METADATA ENVIADA A MP:");
+    System.out.println("usuarioId=" + cmd.usuarioId());
+    System.out.println("eventoId=" + cmd.eventoId());
+    System.out.println("tipoEntradaId=" + cmd.items().get(0).id());
+    System.out.println("cantidad=" + cmd.items().get(0).quantity());
+    System.out.println("precio=" + cmd.items().get(0).unitPrice());
+
+
     var pref = new PreferenceClient().create(builder.build());
 
     return new CreatePrefResult(pref.getId(), pref.getInitPoint());
-  }
-
-  @Override
-  public CreatePrefResult createPreference(CreatePrefCommand cmd) throws MPException, MPApiException {
-    return null;
   }
 
   // ======================================================

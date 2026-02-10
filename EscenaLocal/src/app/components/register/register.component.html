@@ -1,0 +1,41 @@
+<div class="container mt-4" style="max-width:420px;">
+    <div class="card p-3 shadow">
+        <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+            <div class="mb-3">
+                <label class="form-label">Usuario</label>
+                <input name="username" [(ngModel)]="model.username" required class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" [(ngModel)]="model.email" required class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" [(ngModel)]="model.password" required class="form-control" />
+            </div>
+            <div class="mb-3">
+                <!-- Imagen opcional solo si estamos en modo registro -->
+                <div class="mb-3">
+                    <label class="form-label">Foto de perfil (opcional)</label>
+                    <input type="file" accept="image/*" (change)="onFileSelected($event)" class="form-control" />
+                </div>
+
+            </div>
+
+            <button class="btn-orange w-100" [disabled]="registerForm.invalid">
+                Registrarme
+            </button>
+        </form>
+
+        <div *ngIf="error" class="alert alert-danger mt-2">{{ error }}</div>
+
+        <div class="text-center mt-3">
+            <span>¿Ya tenés cuenta?</span>
+            <a class="text-primary fw-bold" (click)="irALogin()" style="cursor: pointer;">
+                Iniciar Sesión
+            </a>
+        </div>
+    </div>
+</div>

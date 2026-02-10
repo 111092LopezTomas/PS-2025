@@ -22,6 +22,10 @@ public class WebhookController {
     @RequestBody(required = false) String bodyRaw
   ) {
 
+    System.out.println("📩 WEBHOOK RECIBIDO");
+    System.out.println("Query: " + query);
+    System.out.println("Body: " + bodyRaw);
+
     Long paymentId = extractPaymentId(query, bodyRaw);
 
     if (paymentId == null) {

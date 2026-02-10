@@ -1,32 +1,30 @@
 package org.example.escenalocal.auth.security;
 
-import org.example.escenalocal.auth.security.JwtAuthenticationFilter;
 import org.example.escenalocal.auth.service.CustomUserDetailsService;
-import org.example.escenalocal.auth.security.JwtUtil;
 import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.*;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  @Autowired
-  private JwtUtil jwtUtil;
+  private final JwtUtil jwtUtil;
+  private final CustomUserDetailsService userDetailsService;
 
-  @Autowired
-  private CustomUserDetailsService userDetailsService;
+  public SecurityConfig(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
+    this.jwtUtil = jwtUtil;
+    this.userDetailsService = userDetailsService;
+  }
 
   @Bean
   public JwtAuthenticationFilter jwtAuthenticationFilter() {
@@ -38,22 +36,16 @@ public class SecurityConfig {
     http
       .csrf(csrf -> csrf.disable())
       .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-      .sessionManagement(session -> session
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-      )
+      .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .authorizeHttpRequests(auth -> auth
         .requestMatchers("/auth/**").permitAll()
-
-        // Swagger / H2 públicos si los usás
         .requestMatchers(
           "/h2-console/**",
           "/swagger-ui/**",
           "/v3/api-docs/**",
-          "/v3/api-docs.yaml",
           "/swagger-resources/**",
           "/webjars/**"
         ).permitAll()
-
         .requestMatchers(
           "/artistas/**",
           "/provincias/**",
@@ -63,18 +55,25 @@ public class SecurityConfig {
           "/clasificaciones/**",
           "/entradas/**",
           "/productores/**",
-          "/payments/create-preference/**",
+          //"/payments/create-preference/**",
           "/payments/webhook",
           "/api/notificaciones"
         ).permitAll()
-
-        // Cualquier otra cosa requiere estar autenticado
         .anyRequest().authenticated()
       )
+      .authenticationProvider(authenticationProvider())
       .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-      .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())); // H2
+      .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
     return http.build();
+  }
+
+  @Bean
+  public AuthenticationProvider authenticationProvider() {
+    DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+    provider.setUserDetailsService(userDetailsService);
+    provider.setPasswordEncoder(passwordEncoder());
+    return provider;
   }
 
   @Bean
@@ -83,7 +82,7 @@ public class SecurityConfig {
     configuration.addAllowedOriginPattern("*");
     configuration.addAllowedMethod("*");
     configuration.addAllowedHeader("*");
-    configuration.setAllowCredentials(true);
+    configuration.setAllowCredentials(false); // más seguro con JWT
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
@@ -100,3 +99,4 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 }
+

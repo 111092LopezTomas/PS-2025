@@ -19,7 +19,7 @@ export class AuthInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
     const token = this.authService.getToken(); // de localStorage, etc.
-
+    console.log('➡️ Request a:', req.url, ' token:', token);
     // NO agregamos token a login/register, pero sí al resto
     if (token &&
         !req.url.includes('/auth/login') &&
@@ -33,7 +33,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
       return next.handle(authReq);
     }
-
+    console.log("Interceptor ejecutado. Token:", token);
     return next.handle(req);
   }
 }
