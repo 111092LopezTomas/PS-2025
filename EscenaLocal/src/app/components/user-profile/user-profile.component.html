@@ -95,6 +95,12 @@
     <hr />
 
     <!-- 🔹 Botones de acción -->
+     <button
+  type="button"
+  class="btn btn-outline-secondary"
+  (click)="configurarNotificaciones()">
+  <i class="bi bi-bell"></i> Configurar notificaciones
+</button>
     <div class="d-flex justify-content-end flex-wrap gap-2 mt-3">
       <!-- Botón Ver eventos (para todos los usuarios) -->
       <button *ngIf="esProductor() || esArtista()"class="btn btn-outline-secondary" (click)="verEventos()">

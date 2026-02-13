@@ -19,9 +19,13 @@
 
   <!-- Notificaciones y Usuario -->
   <ul class="navbar-nav d-flex flex-row ms-auto align-items-center">
+    <li *ngIf="isLoggedIn()">
+      <app-notification-bell></app-notification-bell>
+    </li>
+    
 
     <!-- Campanita con dropdown -->
-    <li *ngIf="isLoggedIn()" class="nav-item dropdown me-3 position-relative">
+    <!-- <li *ngIf="isLoggedIn()" class="nav-item dropdown me-3 position-relative">
       <a class="nav-link d-flex align-items-center text-light" href="#" id="notificacionesDropdown" role="button"
         data-bs-toggle="dropdown" aria-expanded="false">
         <i class="bi bi-bell fs-3"></i>
@@ -29,10 +33,10 @@
           class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
           {{ unreadCount }}
         </span>
-      </a>
+      </a> -->
 
       <!-- Menú desplegable de notificaciones -->
-      <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end mt-2 custom-dropdown"
+      <!-- <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end mt-2 custom-dropdown"
         aria-labelledby="notificacionesDropdown" style="position: absolute; top: 100%; right: 0; min-width: 280px;">
 
         <li *ngIf="notificaciones.length === 0" class="dropdown-item text-muted text-center py-2">
@@ -47,7 +51,7 @@
           </li>
         </ng-container>
       </ul>
-    </li>
+    </li> -->
 
     <!-- Usuario con dropdown -->
     <li class="nav-item dropdown">

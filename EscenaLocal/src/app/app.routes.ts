@@ -23,6 +23,7 @@ import { ProductorDashboardComponent } from './components/productor-dashboard/pr
 import { GraficosProductorComponent } from './components/graficos-productor/graficos-productor.component';
 import { TicketsHistorialComponent } from './components/tickets-historial/tickets-historial.component';
 import { ArtistaDashboardComponent } from './components/artista-dashboard/artista-dashboard.component';
+import { NotificationPreferencesComponent } from './components/notification-preferences/notification-preferences.component';
 
 
 export const routes: Routes = [
@@ -57,6 +58,7 @@ export const routes: Routes = [
   { path: 'dashboard/productor/graficos', component: GraficosProductorComponent},
   { path: 'dashboard/artista', component: ArtistaDashboardComponent},
   { path: 'historial', component: TicketsHistorialComponent, canActivate: [AuthGuard]},
+  { path: 'perfil/notificaciones', component: NotificationPreferencesComponent},
   { path: '**', redirectTo: '/eventos' }
 
 ];

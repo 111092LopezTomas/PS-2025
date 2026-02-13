@@ -69,7 +69,7 @@ public class SecurityConfig {
           "/dashboard/**",
           "/tickets/**"
         ).permitAll()
-
+        .requestMatchers("/notification-preferences/**").authenticated()
         // Cualquier otra cosa requiere estar autenticado
         .anyRequest().authenticated()
       )

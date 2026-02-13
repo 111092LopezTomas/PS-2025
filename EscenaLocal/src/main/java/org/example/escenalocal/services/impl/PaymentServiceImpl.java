@@ -5,9 +5,11 @@ import org.example.escenalocal.dtos.post.PostPaymentInfoDto;
 import org.example.escenalocal.entities.EventoTiposEntradaEntity;
 import org.example.escenalocal.entities.VentaEntradaEntity;
 import org.example.escenalocal.repositories.EventoTiposEntradaRepository;
+import org.example.escenalocal.repositories.NotificacionRepository;
 import org.example.escenalocal.repositories.VentaEntradaRepository;
 import org.example.escenalocal.auth.repository.UserRepository;
 import org.example.escenalocal.services.MercadopagoService;
+import org.example.escenalocal.services.NotificacionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ public class PaymentServiceImpl {
   private final VentaEntradaRepository ventaRepo;
   private final UserRepository usuarioRepo;
   private final EventoTiposEntradaRepository eventoTipoRepo;
+  private final NotificacionService notificacionService;
 
   @Transactional
   public void processPayment(Long paymentId) throws Exception {
@@ -111,5 +114,26 @@ public class PaymentServiceImpl {
     ventaRepo.save(venta);
 
     System.out.println("✅ Venta registrada correctamente (paymentId=" + paymentId + ")");
+
+    Long compradorId = venta.getUsuario().getId();
+    Long productorId = tipoEntrada.getEvento().getProductor().getUsuario().getId();
+    String nombreEvento = tipoEntrada.getEvento().getEvento(); // o getNombre()
+    Integer cantidad = venta.getCantidad();
+
+// Notificación al comprador
+    notificacionService.createCompraEntradaNotificacion(
+      compradorId,
+      cantidad,
+      nombreEvento
+    );
+
+// Notificación al productor (evitar duplicado si fuera el mismo user)
+    if (!productorId.equals(compradorId)) {
+      notificacionService.createVentaEntradaNotificacion(
+        productorId,
+        cantidad,
+        nombreEvento
+      );
+    }
   }
 }

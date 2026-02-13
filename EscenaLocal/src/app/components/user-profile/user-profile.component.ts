@@ -4,6 +4,7 @@ import { UsuarioService } from '../../services/usuario.service';
 import { AuthService } from '../../services/auth.service';
 import { Router, RouterLink } from '@angular/router';
 import { TicketService } from '../../services/ticket.service';
+import { NotificationPreferencesComponent } from '../notification-preferences/notification-preferences.component';
 
 @Component({
   selector: 'app-user-profile',
@@ -104,5 +105,9 @@ export class UserProfileComponent implements OnInit {
 
   verEntradas(): void {
     this.router.navigate(['/historial']);
+  }
+
+  configurarNotificaciones(): void {
+    this.router.navigate(['/perfil/notificaciones']);
   }
 }

@@ -13,6 +13,7 @@ import org.example.escenalocal.dtos.put.PutEventoDto;
 import org.example.escenalocal.entities.*;
 import org.example.escenalocal.repositories.*;
 import org.example.escenalocal.services.EventoService;
+import org.example.escenalocal.services.NotificacionService;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,7 @@ public class EventoServiceImpl implements EventoService {
   private final TiposEntradaRepository tiposEntradaRepository;
   private final ProductorRepository productorRepository;
   private final EventoTiposEntradaRepository eventoTiposEntradaRepository;
+  private final NotificacionService notificacionService;
 
   public GetEventoDto getEventoById(Long id) {
     var e = eventoRepository.findByIdForDto(id)
@@ -274,6 +276,24 @@ public class EventoServiceImpl implements EventoService {
     }
 
     var saved = eventoRepository.save(evento);
+
+    String nombreEvento = saved.getEvento(); // o getNombre()
+
+    // 1) productor: resolver userId dueño del productor
+    Long productorUserId = evento.getProductor().getUsuario().getId();
+    notificacionService.createEventoCreadoNotificacion(productorUserId, nombreEvento);
+
+    // 2) artistas: a cada artista (usuario dueño del artista)
+    List<ArtistaEventoEntity> artistas = evento.getArtistasEvento().stream().toList();
+    for (ArtistaEventoEntity a : artistas) {
+      Long artistaUserId = a.getArtista().getUsuario().getId();
+
+      // (opcional) evitar duplicado si justo coincide con productorUserId
+      if (!artistaUserId.equals(productorUserId)) {
+        notificacionService.createArtistaIncluidoEnEventoNotificacion(artistaUserId, nombreEvento);
+      }
+    }
+
     return modelMapper.map(saved, GetEventoDto.class);
   }
 

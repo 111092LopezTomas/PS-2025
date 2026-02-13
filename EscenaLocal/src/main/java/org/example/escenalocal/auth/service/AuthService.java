@@ -147,5 +147,7 @@ public class AuthService {
     // Actualizar y guardar nueva contraseña
     user.setPassword(passwordEncoder.encode(req.getNueva()));
     userRepo.save(user);
+
+    notificacionService.createCambioContrasenaNotificacion(user.getId());
   }
 }

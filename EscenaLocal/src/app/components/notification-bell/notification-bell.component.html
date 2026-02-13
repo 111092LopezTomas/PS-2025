@@ -1,0 +1,38 @@
+<div class="notif-bell">
+  <button class="bell-btn" (click)="toggleDropdown()" type="button" aria-label="Notificaciones">
+    <i class="bi bi-bell fs-3"></i>
+    <span *ngIf="unreadCount > 0" class="badge">
+      {{ unreadCount > 99 ? '99+' : unreadCount }}
+    </span>
+  </button>
+
+  <div *ngIf="open" class="dropdown">
+    <div class="dropdown-header">
+      <span>Notificaciones</span>
+      <button class="link-btn" type="button" (click)="markAll()">Marcar todo</button>
+    </div>
+
+    <div *ngIf="loading && notifications.length === 0" class="loading">Cargando...</div>
+
+    <div *ngIf="!loading && notifications.length === 0" class="empty">
+      No tenés notificaciones.
+    </div>
+
+    <div class="items">
+      <button
+        class="item"
+        *ngFor="let n of notifications"
+        (click)="onClickNotification(n)"
+        type="button"
+        [class.unread]="!n.leido"
+      >
+        <div class="msg">{{ n.mensaje }}</div>
+        <div class="date">{{ n.creado | date:'dd/MM/yyyy HH:mm' }}</div>
+      </button>
+    </div>
+
+    <button *ngIf="hasMore" class="load-more" type="button" (click)="loadMore()">
+      Ver más
+    </button>
+  </div>
+</div>

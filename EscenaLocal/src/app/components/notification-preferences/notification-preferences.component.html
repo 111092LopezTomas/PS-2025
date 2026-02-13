@@ -1,0 +1,231 @@
+<div class="page" *ngIf="preferences; else loadingTpl">
+  <div class="card">
+
+    <div class="header">
+      <div>
+        <h2 class="title">Preferencias de notificaciones</h2>
+        <p class="subtitle">
+          Elegí qué notificaciones querés recibir y por qué canal.
+        </p>
+      </div>
+    </div>
+
+    <!-- =====================
+         CANALES
+    ====================== -->
+    <div class="section">
+      <h3 class="section-title">Canales</h3>
+      <p class="section-hint">Cómo querés recibir las notificaciones.</p>
+
+      <div class="grid">
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Email</p>
+            <p class="pref-desc">Recibir notificaciones por correo.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar Email">
+            <input type="checkbox" [(ngModel)]="preferences.email" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Notificaciones push</p>
+            <p class="pref-desc">Notificaciones en el dispositivo/navegador.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar notificaciones push">
+            <input type="checkbox" [(ngModel)]="preferences.push" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================
+         GENERALES (TODOS)
+    ====================== -->
+    <div class="section">
+      <h3 class="section-title">Generales</h3>
+      <p class="section-hint">Estas aplican a todos los roles.</p>
+
+      <div class="grid">
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Mensajes directos</p>
+            <p class="pref-desc">Cuando te escriben por privado.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar mensajes directos">
+            <input type="checkbox" [(ngModel)]="preferences.mensajesDirectos" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Recordatorios de eventos</p>
+            <p class="pref-desc">Avisos antes de que empiece un evento.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar recordatorios de eventos">
+            <input type="checkbox" [(ngModel)]="preferences.recordatoriosEventos" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================
+         USUARIO
+    ====================== -->
+    <div class="section" *ngIf="role === 'ROL_USUARIO'">
+      <h3 class="section-title">Usuario</h3>
+      <p class="section-hint">Preferencias específicas para usuarios.</p>
+
+      <div class="grid">
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Novedades y promociones</p>
+            <p class="pref-desc">Marketing, anuncios y novedades de la app.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar novedades y promociones">
+            <input type="checkbox" [(ngModel)]="preferences.marketingNovedades" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================
+         ARTISTA
+    ====================== -->
+    <div class="section" *ngIf="role === 'ROL_ARTISTA'">
+      <h3 class="section-title">Artista</h3>
+      <p class="section-hint">Preferencias específicas para artistas.</p>
+
+      <div class="grid">
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Invitaciones a eventos</p>
+            <p class="pref-desc">Cuando te invitan a participar en un evento.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar invitaciones a eventos">
+            <input type="checkbox" [(ngModel)]="preferences.invitacionesAEventos" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Nuevos seguidores</p>
+            <p class="pref-desc">Aviso cuando alguien te sigue.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar nuevos seguidores">
+            <input type="checkbox" [(ngModel)]="preferences.nuevosSeguidores" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Comentarios y reseñas</p>
+            <p class="pref-desc">Notificación cuando te dejan reseñas.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar comentarios y reseñas">
+            <input type="checkbox" [(ngModel)]="preferences.comentariosResenas" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================
+         PRODUCTOR
+    ====================== -->
+    <div class="section" *ngIf="role === 'ROL_PRODUCTOR'">
+      <h3 class="section-title">Productor</h3>
+      <p class="section-hint">Preferencias específicas para productores.</p>
+
+      <div class="grid">
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Ventas de entradas</p>
+            <p class="pref-desc">Avisos por ventas realizadas.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar ventas de entradas">
+            <input type="checkbox" [(ngModel)]="preferences.ventasEntradas" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Pagos de Mercado Pago</p>
+            <p class="pref-desc">Actualizaciones de pagos y cobros.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar pagos Mercado Pago">
+            <input type="checkbox" [(ngModel)]="preferences.pagosMercadopago" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="pref-item">
+          <div class="pref-text">
+            <p class="pref-label">Alertas de capacidad</p>
+            <p class="pref-desc">Avisos cuando se acerca el límite del lugar.</p>
+          </div>
+
+          <label class="switch" aria-label="Activar alertas de capacidad">
+            <input type="checkbox" [(ngModel)]="preferences.alertasCapacidad" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================
+         ACCIONES
+    ====================== -->
+    <div class="actions">
+      <button class="btn primary" (click)="save()" [disabled]="saving">
+        {{ saving ? 'Guardando...' : 'Guardar cambios' }}
+      </button>
+    </div>
+
+    <div class="loading" *ngIf="saving">
+      <span class="spinner"></span>
+      Guardando cambios…
+    </div>
+
+  </div>
+</div>
+
+<ng-template #loadingTpl>
+  <div class="page">
+    <div class="card">
+      <div class="loading">
+        <span class="spinner"></span>
+        Cargando preferencias…
+      </div>
+    </div>
+  </div>
+</ng-template>

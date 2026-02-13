@@ -6,11 +6,12 @@ import { AuthService } from '../../services/auth.service';
 import { UsuarioService } from '../../services/usuario.service';
 import { Subscription } from 'rxjs';
 import { NotificacionService, Notificacion } from '../../services/notificacion.service';
+import { NotificationBellComponent } from '../notification-bell/notification-bell.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, EventSearchComponent],
+  imports: [CommonModule, EventSearchComponent, NotificationBellComponent],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
 })
