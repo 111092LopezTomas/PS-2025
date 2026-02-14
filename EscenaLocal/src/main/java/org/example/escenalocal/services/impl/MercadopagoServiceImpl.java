@@ -64,7 +64,9 @@ public class  MercadopagoServiceImpl implements MercadopagoService {
         getLong(md.get("eventoId")),
         getLong(md.get("tipoEntradaId")),
         getInteger(md.get("cantidad")),
-        getBigDecimal(md.get("precio"))
+        getBigDecimal(md.get("precio")),
+        p.getExternalReference(),
+        p.getStatusDetail()
       );
 
     } catch (Exception e) {

@@ -15,7 +15,7 @@ export interface CreatePrefCommand {
 
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
-  private base = environment.apiBase;
+  private base = environment.apiBaseLocal;
   constructor(private http: HttpClient) {}
 
   createPreference(cmd: CreatePrefCommand) {
@@ -31,7 +31,7 @@ export class PaymentService {
   qty = 1,
   precio?: number
 ) {
-  let url = `${environment.apiBase}/payments/create-preference/event/${eventId}`
+  let url = `${environment.apiBaseLocal}/payments/create-preference/event/${eventId}`
           + `?tipoEntradaId=${tipoEntradaId}`
           + `&qty=${qty}`;
 
