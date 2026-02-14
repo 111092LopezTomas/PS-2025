@@ -1,5 +1,6 @@
 <div class="container mt-4" style="max-width:420px;">
   <div class="card p-3 shadow">
+    
     <h4 class="mb-3">Iniciar sesión</h4>
 
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
@@ -14,7 +15,10 @@
         <a routerLink="/forgot-password" class="small">¿Olvidaste tu contraseña?</a>
       </div>
 
-      <button class="btn-orange" [disabled]="loginForm.invalid">Ingresar</button>
+      <button type="submit" class="btn-orange" >
+        Ingresar
+      </button>
+      
     </form>
 
     <!-- Enlace para registrarse -->

@@ -38,3 +38,4 @@ public class PostPaymentInfoDto {
     this.statusDetail = statusDetail;
   }
 }
+

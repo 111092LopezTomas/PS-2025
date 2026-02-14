@@ -44,6 +44,17 @@ public class PaymentServiceImpl {
     // 2️⃣ Traer info desde Mercado Pago
     PostPaymentInfoDto info = mercadopagoService.getPaymentInfo(paymentId);
 
+    // 🔁 Retry por timing de MP
+    int intentos = 0;
+    while ((info == null || info.getStatus() == null) && intentos < 3) {
+      try {
+        Thread.sleep(2000); // 2 segundos
+      } catch (InterruptedException ignored) {}
+
+      info = mercadopagoService.getPaymentInfo(paymentId);
+      intentos++;
+    }
+
     if (info == null || info.getStatus() == null) {
       System.out.println("⚠ Pago sin estado todavía: " + paymentId);
       return;

@@ -6,18 +6,22 @@ import com.mercadopago.resources.payment.Payment;
 import org.example.escenalocal.dtos.post.PostPaymentInfoDto;
 import org.example.escenalocal.services.MercadopagoService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Service
-public class MercadopagoServiceImpl implements MercadopagoService {
+public class  MercadopagoServiceImpl implements MercadopagoService {
 
   private final RestTemplate restTemplate;
   private final ObjectMapper objectMapper;
 
+  // Inyectamos el access token desde application.yml
   @Value("${mercadopago.access-token}")
   private String accessToken;
 
@@ -30,98 +34,38 @@ public class MercadopagoServiceImpl implements MercadopagoService {
   public PostPaymentInfoDto getPaymentInfo(Long paymentId) {
     try {
       PaymentClient client = new PaymentClient();
-      Payment payment = client.get(paymentId);
+      Payment p = client.get(paymentId);
 
-      if (payment == null) {
-        System.out.println("⚠ MP no devolvió pago para id = " + paymentId);
+      if (p == null) return null;
+
+      if (p.getOrder() == null || p.getOrder().getId() == null) {
+        System.out.println("⚠ Pago sin order/preferenceId id=" + paymentId);
         return null;
       }
 
-      String status = payment.getStatus();
-      String statusDetail = payment.getStatusDetail();
-      String externalReference = payment.getExternalReference();
-      Map<String, Object> md = payment.getMetadata();
+      Long orderId = p.getOrder().getId();
 
-      System.out.println("🔍 MP metadata para paymentId=" + paymentId + ": " + md);
-      System.out.println("🔍 MP external_reference=" + externalReference);
-      System.out.println("🔍 MP status=" + status + ", status_detail=" + statusDetail);
+      var order = new com.mercadopago.client.merchantorder.MerchantOrderClient()
+        .get(orderId);
 
-      Long usuarioId     = null;
-      Long eventoId      = null;
-      Long tipoEntradaId = null;
-      Integer cantidad   = null;
-      BigDecimal precioUnitario = null; // precio por entrada, NO total
+      String preferenceId = order.getPreferenceId();
 
-      // 1) Leer todo lo posible desde metadata
-      if (md != null) {
-        usuarioId     = getLongOr(md, "usuarioId", "usuario_id");
-        eventoId      = getLongOr(md, "eventoId", "evento_id");
-        tipoEntradaId = getLongOr(md, "tipoEntradaId", "tipo_entrada_id");
-        cantidad      = getInteger(md.get("cantidad"));
-        precioUnitario = getBigDecimal(md.get("precio"));
-      } else {
-        System.out.println("⚠ Pago sin metadata id = " + paymentId);
-      }
+      var pref = new com.mercadopago.client.preference.PreferenceClient()
+        .get(preferenceId);
 
-      // 2) Fallback para eventoId desde external_reference "EVT-17"
-      if (eventoId == null && externalReference != null && externalReference.startsWith("EVT-")) {
-        try {
-          eventoId = Long.valueOf(externalReference.substring(4));
-        } catch (NumberFormatException e) {
-          System.out.println("⚠ No se pudo parsear eventoId desde external_reference=" + externalReference);
-        }
-      }
 
-      // 3) Fallback desde additional_info.items (tipoEntradaId, cantidad, precioUnitario)
-      if (payment.getAdditionalInfo() != null &&
-        payment.getAdditionalInfo().getItems() != null &&
-        !payment.getAdditionalInfo().getItems().isEmpty()) {
+      Map<String, Object> md = pref.getMetadata();
+      if (md == null) return null;
 
-        var item = payment.getAdditionalInfo().getItems().get(0);
-
-        if (tipoEntradaId == null && item.getId() != null) {
-          try {
-            tipoEntradaId = Long.valueOf(item.getId());
-          } catch (NumberFormatException e) {
-            System.out.println("⚠ No se pudo parsear tipoEntradaId desde item.id=" + item.getId());
-          }
-        }
-
-        if (cantidad == null && item.getQuantity() != null) {
-          cantidad = item.getQuantity();
-        }
-
-        if (precioUnitario == null && item.getUnitPrice() != null) {
-          precioUnitario = item.getUnitPrice(); // ya es BigDecimal
-        }
-      }
-
-      // 4) Si todavía no tenemos precioUnitario pero sí transactionAmount y cantidad, lo deducimos
-      if (precioUnitario == null &&
-        payment.getTransactionAmount() != null &&
-        cantidad != null &&
-        cantidad > 0) {
-
-        BigDecimal total = payment.getTransactionAmount();
-        precioUnitario = total
-          .divide(BigDecimal.valueOf(cantidad), 2, BigDecimal.ROUND_HALF_UP);
-      }
-
-      PostPaymentInfoDto info = new PostPaymentInfoDto(
-        payment.getId(),        // paymentId
-        status,                 // status
-        usuarioId,
-        eventoId,
-        tipoEntradaId,
-        cantidad,
-        precioUnitario,
-        externalReference,
-        statusDetail
+      return new PostPaymentInfoDto(
+        paymentId,
+        p.getStatus(),
+        getLong(md.get("usuarioId")),
+        getLong(md.get("eventoId")),
+        getLong(md.get("tipoEntradaId")),
+        getInteger(md.get("cantidad")),
+        getBigDecimal(md.get("precio"))
       );
-
-      System.out.println("🔍 PostPaymentInfoDto construido: " + info);
-
-      return info;
 
     } catch (Exception e) {
       System.out.println("⚠ Error consultando MP payment ID=" + paymentId + ": " + e.getMessage());
@@ -129,26 +73,12 @@ public class MercadopagoServiceImpl implements MercadopagoService {
     }
   }
 
-    /* =========================
-       HELPERS SEGUROS
-       ========================= */
-
   private Long getLong(Object value) {
     if (value == null) return null;
     if (value instanceof Number n) {
       return n.longValue();
     }
     return Long.valueOf(value.toString());
-  }
-
-  private Long getLongOr(Map<String, Object> md, String... keys) {
-    for (String k : keys) {
-      Object v = md.get(k);
-      if (v != null) {
-        return getLong(v);
-      }
-    }
-    return null;
   }
 
   private Integer getInteger(Object value) {
@@ -161,10 +91,11 @@ public class MercadopagoServiceImpl implements MercadopagoService {
 
   private BigDecimal getBigDecimal(Object value) {
     if (value == null) return null;
-    if (value instanceof BigDecimal bd) return bd;
     if (value instanceof Number n) {
       return BigDecimal.valueOf(n.doubleValue());
     }
     return new BigDecimal(value.toString());
   }
+
+
 }

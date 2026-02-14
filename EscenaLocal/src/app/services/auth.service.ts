@@ -54,7 +54,8 @@ export class AuthService {
       tap((response) => {
         // 1) guardo token con la key correcta
         this.saveToken(response.token);
-
+        console.log('LOGIN RESPONSE:', response);
+        console.log('TOKEN GUARDADO:', localStorage.getItem('auth_token'));
         // 2) guardo userId
         localStorage.setItem(this.userIdKey, response.userId.toString());
 

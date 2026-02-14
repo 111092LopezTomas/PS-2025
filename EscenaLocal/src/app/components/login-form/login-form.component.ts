@@ -49,7 +49,7 @@ export class LoginFormComponent {
 
     this.authService.register(data, 1).subscribe({
       next: (res) => {
-        localStorage.setItem('jwt', res.token);
+        
         localStorage.setItem('usuarioId', res.userId.toString());
         this.router.navigate(['/home']);
       },
@@ -61,7 +61,6 @@ export class LoginFormComponent {
   } else {
     this.authService.login(this.model).subscribe({
       next: (res) => {
-        localStorage.setItem('jwt', res.token);
         this.router.navigate(['/home']);
       },
       error: () => {

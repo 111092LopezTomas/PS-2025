@@ -50,7 +50,7 @@ public class PaymentController {
     return Map.of("status", gateway.getStatus(id).name());
   }
 
-  @PostMapping("/create-preference/event/{eventId}")
+   @PostMapping("/create-preference/event/{eventId}")
   public Map<String, Object> createForEvent(
 
   @PathVariable Long eventId,

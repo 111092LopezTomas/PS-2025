@@ -18,12 +18,12 @@ export class CheckoutComponent implements AfterViewInit {
   loading = false;
   error?: string;
   prefId?: string;
+  tipoEntradaId: number = 1 ;
   initPoint?: string;
   eventId = 0;
   precio?: number;
   cantidad: number = 1;
   total: number = 0;
-  tipoEntradaId: number = 0;
 
   // guardamos la promesa del SDK para no cargarlo mil veces
   private mpPromise?: Promise<any>;
@@ -39,9 +39,6 @@ export class CheckoutComponent implements AfterViewInit {
 
     const p = Number(this.route.snapshot.queryParamMap.get('precio'));
     this.precio = Number.isFinite(p) && p > 0 ? p : undefined;
-
-    const tipoParam = Number(this.route.snapshot.queryParamMap.get('tipo'));
-  this.tipoEntradaId = Number.isFinite(tipoParam) && tipoParam > 0 ? tipoParam : 0;
 
     this.calcularTotal();
   }
@@ -72,7 +69,7 @@ export class CheckoutComponent implements AfterViewInit {
       // 1) Crear preferencia en tu backend
       console.log('[MP] Creando preferencia para evento', this.eventId);
       const res = await this.payments
-        .createPreferenceForEvent(this.eventId, this.cantidad, this.tipoEntradaId, this.precio)
+        .createPreferenceForEvent(this.eventId, this.tipoEntradaId, this.cantidad, this.precio)
         .toPromise();
 
       if (!res) throw new Error('Sin respuesta del backend al crear preferencia');
