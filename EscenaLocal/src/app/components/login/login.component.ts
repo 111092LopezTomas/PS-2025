@@ -67,6 +67,6 @@ export class LoginComponent implements AfterViewInit {
   }
 
   irARegistrar() {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/login/nuevo']);
   }
 }
