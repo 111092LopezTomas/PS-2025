@@ -12,6 +12,7 @@ import org.example.escenalocal.entities.*;
 import org.example.escenalocal.repositories.ArtistaRepository;
 import org.example.escenalocal.repositories.GeneroRepository;
 import org.example.escenalocal.repositories.ProductorRepository;
+import org.example.escenalocal.services.NotificacionService;
 import org.example.escenalocal.services.PasswordResetService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -37,6 +38,7 @@ public class AuthController {
   private final GeneroRepository generoRepo;
   private final JwtUtil jwtUtil;
   private final PasswordResetService passwordResetService;
+  private final NotificacionService notificacionService;
 
   public AuthController(AuthService authService,
                         UserRepository userRepo,
@@ -45,7 +47,8 @@ public class AuthController {
                         ArtistaRepository artistaRepo,
                         ProductorRepository productorRepo,
                         GeneroRepository generoRepo,
-                        JwtUtil jwtUtil, PasswordResetService passwordResetService) {
+                        JwtUtil jwtUtil, PasswordResetService passwordResetService,
+                        NotificacionService notificacionService) {
     this.authService = authService;
     this.userRepo = userRepo;
     this.rolRepository = rolRepository;
@@ -55,6 +58,7 @@ public class AuthController {
     this.generoRepo = generoRepo;
     this.jwtUtil = jwtUtil;
     this.passwordResetService = passwordResetService;
+    this.notificacionService = notificacionService;
   }
 
   @PostMapping("/login")
@@ -201,6 +205,7 @@ public class AuthController {
 
     // 5) devolver token + id usuario
     String token = jwtUtil.generateToken(user.getUsername(), user.getRol().getRol());
+    notificacionService.createBinvenidaNotificacion(user.getId());
     return ResponseEntity.ok(new AuthResponse(token, user.getId()));
   }
 

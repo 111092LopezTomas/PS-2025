@@ -89,29 +89,29 @@ onSubmit() {
     }
 
     this.authService.registerArtProd(payload).subscribe({
-      next: (res) => {
-        const userId = res.userId;
-        localStorage.setItem('jwt', res.token);
-        localStorage.setItem('usuarioId', userId.toString());
+     next: (res) => {
+  const userId = Number(res.userId);
+  const token = res.token;
 
-        // Si el usuario eligió imagen → subirla
-        if (this.selectedFile) {
-          this.usuarioService.subirImagen(userId, this.selectedFile).subscribe({
-            next: () => {
-              console.log('Imagen subida correctamente');
-              this.router.navigate(['/home']);
-            },
-            error: (err) => {
-              console.error('Error al subir imagen:', err);
-              // Aun si falla la imagen, navegamos igual
-              this.router.navigate(['/home']);
-            }
-          });
-        } else {
-          // Si no hay imagen, vamos directo al home
-          this.router.navigate(['/home']);
-        }
+  // si hay imagen, subir primero; después "loguear" con el AuthService
+  if (this.selectedFile) {
+    this.usuarioService.subirImagen(userId, this.selectedFile).subscribe({
+      next: () => {
+        console.log('Imagen subida correctamente');
+        this.authService.setSession(token, userId);
+        this.router.navigate(['/home']);
       },
+      error: (err) => {
+        console.error('Error al subir imagen:', err);
+        this.authService.setSession(token, userId);
+        this.router.navigate(['/home']);
+      }
+    });
+  } else {
+    this.authService.setSession(token, userId);
+    this.router.navigate(['/home']);
+  }
+},
       error: (err) => {
         console.error('Error al registrar artista/productor:', err);
         this.error = 'Error al registrar artista/productor';

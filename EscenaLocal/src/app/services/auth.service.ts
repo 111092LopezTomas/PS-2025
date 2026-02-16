@@ -275,6 +275,19 @@ clearProductorId(): void {
   localStorage.removeItem(this.productorIdKey);
 }
 
+setSession(token: string, userId: number): void {
+  // token + userId con las KEYS correctas del servicio
+  this.saveToken(token);
+  localStorage.setItem(this.userIdKey, String(userId));
+
+  // emito estado logueado
+  this.loggedIn$.next(true);
+
+  // emito avatar (para navbar/perfil)
+  const imgUrl = `${this.apiUrl}/${userId}/imagen?ts=${Date.now()}`;
+  this.setAvatar(imgUrl);
+}
+
 }
 
 
