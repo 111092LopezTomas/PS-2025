@@ -53,3 +53,10 @@
   object-fit: cover;  /* recorta la imagen si no es cuadrada */
   border-radius: 50%; /* hace círculo */
 }
+
+.acciones-evento {
+  display: flex;
+  flex-direction: column;  /* uno debajo del otro */
+  gap: 8px;                /* espacio entre botones */
+  align-items: stretch;   /* ambos del mismo ancho */
+}

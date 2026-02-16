@@ -183,6 +183,7 @@ export class AuthService {
     localStorage.removeItem(this.userIdKey);
     this.loggedIn$.next(false);
     this.avatarUrl$.next(null);
+    this.clearProductorId();
   }
 
   // =====================
@@ -206,6 +207,23 @@ export class AuthService {
 
     return decoded.id || decoded.userId || null;
   }
+
+  getProductorIdFromToken(): number | null {
+  const token = this.getToken();
+  if (!token) return null;
+
+  const decoded = this.decodeToken(token);
+  if (!decoded) return null;
+
+  // probables nombres según cómo lo armes en el backend
+  return (
+    decoded.productorId ??
+    decoded.idProductor ??
+    decoded.productor_id ??
+    null
+  );
+}
+
 
    getUserRoleFromToken(): string | null {
     const token = this.getToken();
@@ -241,6 +259,22 @@ export class AuthService {
   cambiarPassword(data: { actual: string; nueva: string }) {
   return this.http.put(`${this.apiUrl}/change-password`, data);
 }
+
+private productorIdKey = 'productorId';
+
+setProductorId(id: number): void {
+  localStorage.setItem(this.productorIdKey, String(id));
+}
+
+getProductorId(): number | null {
+  const raw = localStorage.getItem(this.productorIdKey);
+  return raw ? Number(raw) : null;
+}
+
+clearProductorId(): void {
+  localStorage.removeItem(this.productorIdKey);
+}
+
 }
 
 

@@ -41,10 +41,14 @@ export class UserProfileComponent implements OnInit {
         // 🔹 Cargar IDs desde el DTO
         this.idArtista = u.idArtista ?? null;
         this.idProductor = u.idProductor ?? null;
+        if (u.rol === 'ROL_PRODUCTOR' && this.idProductor) {
+          this.authService.setProductorId(this.idProductor);
+        }
 
         // 🔹 Cargar imagen si tu backend lo expone así
         this.imagenUrl = `http://localhost:8080/auth/${u.id}/imagen`;
 
+        
         this.loading = false;
       },
       error: () => {
@@ -75,17 +79,20 @@ export class UserProfileComponent implements OnInit {
   }
 
   verEventos(): void {
-    if (!this.usuario) return;
+  if (!this.usuario) return;
 
-    // 🔹 ahora usamos idArtista o idProductor del DTO
-    if (this.esProductor() && this.idProductor) {
-      this.router.navigate([`/eventos/productor/${this.idProductor}`]);
-    } else if (this.esArtista() && this.idArtista) {
-      this.router.navigate([`/eventos/artista/${this.idArtista}`]);
-    } else {
-      this.router.navigate(['/eventos']);
-    }
+  if (this.esProductor() && this.idProductor) {
+    // ✅ Guardar SIEMPRE antes de navegar
+    this.authService.setProductorId(this.idProductor);
+
+    this.router.navigate([`/eventos/productor/${this.idProductor}`]);
+  } else if (this.esArtista() && this.idArtista) {
+    this.router.navigate([`/eventos/artista/${this.idArtista}`]);
+  } else {
+    this.router.navigate(['/eventos']);
   }
+}
+
 
   verReportes(): void {
     if (!this.usuario) return;

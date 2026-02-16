@@ -37,6 +37,7 @@ export interface EventGet {
   destacados: string[];
   entradasDetalle: EntradaDto[];
   productor: string;
+  productorId: number;
 }
 
 export interface FiltrosEvento {
