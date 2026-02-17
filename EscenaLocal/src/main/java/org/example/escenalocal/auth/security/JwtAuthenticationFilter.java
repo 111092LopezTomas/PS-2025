@@ -26,17 +26,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
-    String path = request.getRequestURI();
+    String path = request.getServletPath();
 
-    System.out.println("🔍 shouldNotFilter path = " + path);
+    System.out.println("🔍 shouldNotFilter servletPath = " + path);
 
     return path.startsWith("/auth")
       || path.startsWith("/swagger")
       || path.startsWith("/v3")
       || path.startsWith("/h2-console")
-      || path.startsWith("/payments/webhook");
-      //  || path.startsWith("/payments/create-preference")
-      //|| path.startsWith("/eventos");
+      || path.equals("/payments/webhook")
+      || path.startsWith("/payments/webhook/");
   }
 
   @Override
