@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -120,6 +121,7 @@ public class PaymentServiceImpl {
     venta.setEstadoPago(info.getStatus());            // "approved"
     venta.setExternalReference(info.getExternalReference()); // EVT-17, etc. (agregalo al DTO)
     venta.setFechaActualizacion(LocalDateTime.now());
+    venta.setQrToken(UUID.randomUUID().toString());
     venta.setStatusDetail(info.getStatusDetail());    // agregalo al DTO si te interesa
 
     ventaRepo.save(venta);

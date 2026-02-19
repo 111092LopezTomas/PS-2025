@@ -1,5 +1,4 @@
 <div class="container my-4">
-
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h2 class="mb-0">Mis entradas</h2>
 
@@ -14,11 +13,17 @@
     {{ error }}
   </div>
 
-  <div *ngIf="!loading && !error && misEntradas.length === 0" class="alert alert-info">
+  <div
+    *ngIf="!loading && !error && misEntradas.length === 0"
+    class="alert alert-info"
+  >
     Todavía no compraste entradas.
   </div>
 
-  <div class="table-responsive" *ngIf="!loading && !error && misEntradas.length > 0">
+  <div
+    class="table-responsive"
+    *ngIf="!loading && !error && misEntradas.length > 0"
+  >
     <table class="table table-striped align-middle">
       <thead>
         <tr>
@@ -35,29 +40,87 @@
       <tbody>
         <tr *ngFor="let x of misEntradas; trackBy: trackByVentaId">
           <td>{{ x.eventoNombre }}</td>
-          <td>{{ x.fechaEvento | date:'mediumDate' }}</td>
+          <td>{{ x.fechaEvento | date: "mediumDate" }}</td>
           <td>{{ x.tipoEntrada }}</td>
           <td>{{ x.cantidad }}</td>
-          <td>{{ x.montoTotal | currency:'ARS' }}</td>
+          <td>{{ x.montoTotal | currency: "ARS" }}</td>
 
           <td>
-            <span class="badge bg-success" *ngIf="x.estadoPago === 'approved'">Aprobado</span>
-            <span class="badge bg-warning text-dark" *ngIf="x.estadoPago === 'pending'">Pendiente</span>
-            <span class="badge bg-danger" *ngIf="x.estadoPago && x.estadoPago !== 'approved' && x.estadoPago !== 'pending'">
+            <span class="badge bg-success" *ngIf="x.estadoPago === 'approved'"
+              >Aprobado</span
+            >
+            <span
+              class="badge bg-warning text-dark"
+              *ngIf="x.estadoPago === 'pending'"
+              >Pendiente</span
+            >
+            <span
+              class="badge bg-danger"
+              *ngIf="
+                x.estadoPago &&
+                x.estadoPago !== 'approved' &&
+                x.estadoPago !== 'pending'
+              "
+            >
               {{ x.estadoPago }}
             </span>
-            <span class="badge bg-secondary" *ngIf="!x.estadoPago">Sin estado</span>
+            <span class="badge bg-secondary" *ngIf="!x.estadoPago"
+              >Sin estado</span
+            >
           </td>
 
           <td class="text-end">
-            <a class="btn btn-sm btn-primary" [routerLink]="['/evento', x.eventoId]">
+            <a
+              class="btn btn-sm btn-outline-primary me-2"
+              [routerLink]="['/evento', x.eventoId]"
+            >
               Ver evento
             </a>
+
+            <button
+              class="btn btn-sm btn-primary"
+              (click)="verQr(x)"
+              [disabled]="x.estadoPago !== 'approved'"
+              title="Disponible solo si el pago está aprobado"
+            >
+              Ver QR
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-
 </div>
 
+<!-- MODAL QR -->
+<div class="modal-backdrop" *ngIf="showQrModal" (click)="cerrarModal()"></div>
+
+<div class="modal" *ngIf="showQrModal">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">QR de tu entrada</h5>
+      <button class="btn btn-link" (click)="cerrarModal()">✕</button>
+    </div>
+
+    <div class="modal-body text-center" *ngIf="selectedQrUrl">
+      <p class="mb-1">
+        <b>{{ selectedEntrada?.eventoNombre }}</b>
+      </p>
+      <small class="text-muted">{{
+        selectedEntrada?.fechaEvento | date: "medium"
+      }}</small>
+
+      <div class="my-3">
+        <img
+          [src]="selectedQrUrl"
+          alt="QR Entrada"
+          style="width: 260px; height: 260px"
+        />
+      </div>
+
+      <a class="btn btn-outline-secondary" [href]="selectedQrUrl" download>
+        Descargar QR
+      </a>
+    </div>
+  </div>
+</div>

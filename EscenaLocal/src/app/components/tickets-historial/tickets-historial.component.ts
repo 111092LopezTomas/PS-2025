@@ -15,6 +15,10 @@ export class TicketsHistorialComponent {
   loading = false;
   error?: string;
 
+  showQrModal = false;
+  selectedQrUrl: string | null = null;
+  selectedEntrada: any | null = null;
+
   constructor(private ticketService: TicketService) {}
 
   ngOnInit(): void {
@@ -39,5 +43,18 @@ export class TicketsHistorialComponent {
   }
 
   trackByVentaId = (_: number, item: any) => item?.ventaId;
+
+  verQr(entrada: any) {
+    console.log('Entrada:', entrada);
+    this.selectedEntrada = entrada;
+    this.selectedQrUrl = this.ticketService.qrUrl(entrada.ventaId);
+    this.showQrModal = true;
+  }
+
+  cerrarModal() {
+    this.showQrModal = false;
+    this.selectedQrUrl = null;
+    this.selectedEntrada = null;
+  }
 
 }

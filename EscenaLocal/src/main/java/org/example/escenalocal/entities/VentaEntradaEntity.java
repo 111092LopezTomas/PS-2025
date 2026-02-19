@@ -68,4 +68,7 @@ public class VentaEntradaEntity {
     }
     return precioUnitario.multiply(BigDecimal.valueOf(cantidad));
   }
+
+  @Column(name = "qr_token", unique = true)
+  private String qrToken;
 }

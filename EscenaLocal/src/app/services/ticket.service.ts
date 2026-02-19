@@ -11,5 +11,13 @@ export class TicketService {
   misCompras() {
     return this.http.get<any[]>(`${this.apiBase}/tickets/mis-compras`);
   }
+
+  qrUrl(ventaId: number) {
+    return `${this.apiBase}/ventas/${ventaId}/qr`;
+  }
+
+  getQrBlob(ventaId: number) {
+    return this.http.get(`${this.apiBase}/ventas/${ventaId}/qr`, { responseType: 'blob' });
+  }
 }
 

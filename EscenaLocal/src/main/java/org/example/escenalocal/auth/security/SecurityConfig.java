@@ -57,7 +57,8 @@ public class SecurityConfig {
           "/productores/**",
           //"/payments/create-preference/**",
           "/payments/webhook/**",
-          "/api/notificaciones/**"
+          "/api/notificaciones/**",
+          "/ventas/**"
         ).permitAll()
         .anyRequest().authenticated()
       )
