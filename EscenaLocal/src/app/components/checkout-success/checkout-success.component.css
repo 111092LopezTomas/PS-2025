@@ -1,0 +1,50 @@
+.success-container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.btn-home {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.btn-orange {
+  background-color: #ff7b00;       /* Naranja principal */
+  color: white;
+  border: none;
+  border-radius: 8px;              /* Bordes suaves */
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;      /* Transiciones suaves */
+  box-shadow: 0 4px 10px rgba(255, 123, 0, 0.3);
+}
+
+.btn-orange:hover {
+  background-color: #ff9500;       /* Un poco más claro al pasar el mouse */
+  box-shadow: 0 6px 14px rgba(255, 149, 0, 0.4);
+  transform: translateY(-2px);     /* Efecto de elevación */
+}
+
+.btn-orange:active {
+  background-color: #e56b00;       /* Más oscuro al presionar */
+  transform: translateY(1px);      /* Efecto de presión */
+  box-shadow: 0 3px 6px rgba(229, 107, 0, 0.3);
+}
+
+.container {
+  display: flex;
+  justify-content: center;   /* centro horizontal */
+  align-items: center;       /* centro vertical */
+  min-height: 400px;   /* 🔹 más alto que antes */
+}
+
+.box {
+  text-align: center;
+  background: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}

@@ -5,7 +5,7 @@ export const environment = {
   apiBaseLocal: 'http://localhost:8080',
 
   // backend expuesto por ngrok
-  apiBaseNgrok: 'https://prospective-fesswise-haydee.ngrok-free.dev',
+  apiBaseNgrok: 'https://nondietetically-untaxing-tereasa.ngrok-free.dev',
 
   // flag para elegir una u otra
   useNgrok: false,

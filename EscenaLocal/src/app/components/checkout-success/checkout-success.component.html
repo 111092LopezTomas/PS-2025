@@ -1,0 +1,28 @@
+<div *ngIf="loading">
+  <h2>Procesando pago...</h2>
+</div>
+
+<div class="container; box">
+  <div *ngIf="!loading && status === 'APPROVED'">
+    <h2>✅ ¡Pago aprobado!</h2>
+    <button class="btn-orange" (click)="volverInicio()">Volver al inicio</button>
+  </div>
+
+  <div *ngIf="!loading && status === 'pending'">
+    <h2>⏳ Pago pendiente</h2> 
+    <p>Estamos esperando confirmación.</p>
+    <button (click)="volverInicio()">Volver al inicio</button>
+  </div>
+
+  <div *ngIf="!loading && status === 'rejected'">
+    <h2>❌ Pago rechazado</h2>
+    <p>Intentá nuevamente.</p>
+    <button class="btn-orange" (click)="volverInicio()">Volver al inicio</button>
+  </div>
+
+  <div *ngIf="error">
+    <h2>⚠ Error</h2>
+    <p>{{ error }}</p>
+    <button class="btn-orange" (click)="volverInicio()">Volver al inicio</button>
+  </div>
+</div>

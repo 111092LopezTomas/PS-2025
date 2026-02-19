@@ -24,7 +24,7 @@ import { GraficosProductorComponent } from './components/graficos-productor/graf
 import { TicketsHistorialComponent } from './components/tickets-historial/tickets-historial.component';
 import { ArtistaDashboardComponent } from './components/artista-dashboard/artista-dashboard.component';
 import { NotificationPreferencesComponent } from './components/notification-preferences/notification-preferences.component';
-
+import { CheckoutSuccessComponent } from './components/checkout-success/checkout-success.component';
 
 export const routes: Routes = [
   
@@ -38,7 +38,7 @@ export const routes: Routes = [
   { path: 'eventos/editar/:id', component: EventUpdateComponent, canActivate: [RoleGuard],
     data: { role: 'ROL_PRODUCTOR' }},
   { path: 'checkout', component: CheckoutComponent },
-  { path: 'checkout/success', component: CheckoutComponent, canActivate: [AuthGuard] },
+  { path: 'checkout/success', component: CheckoutSuccessComponent, canActivate: [AuthGuard] },
   { path: 'checkout/pending', component: CheckoutComponent, canActivate: [AuthGuard] },
   { path: 'checkout/failure', component: CheckoutComponent, canActivate: [AuthGuard] },
   { path: 'establecimientos/:id', component: EstablishmentComponent},
